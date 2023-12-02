@@ -1,28 +1,25 @@
-<h1> <img src="https://github.com/MinhasKamal/TheGitDown/raw/master/res/images/TheGitDown.png" width="20" height=auto /> TheGitDown </h1>
+Hey there! 👋 Check out TheGitDown, a super handy tool for downloading files or creating download links from any **public directory or file on GitHub**. It's an easy way to grab what you need without the hassle.
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=5KR6BA9MYTM62&no_recurring=0&currency_code=USD)
+Want to give it a try? Head over to [TheGitDown](https://gitdown.xyz) and see how simple it is!
 
-#### Create GitHub Resource Download Link
+### How Does It Work?
 
-With this tool you can directly download or create download link to any GitHub **public directory or file**.
+![See it in action](https://cloud.githubusercontent.com/assets/5456665/17822364/940bded8-6678-11e6-9603-b84d75bccec1.gif)
 
-### Website
+### Getting a Bit More Technical
 
-[TheGitDown ↑](https://minhaskamal.github.io/TheGitDown)
+With TheGitDown, you can customize your download. Let's say you want to download a specific directory from GitHub as a zip file, and even rename it or exclude the root directory. It's all possible! Just tweak the URL in this format: 
 
-### How to Use?
+```https://gitdown.xyz/#/home?url=<GitHub link>&fileName=<your chosen name>&rootDirectory=<true/false or specific name>```. 
 
-<table><tr><td> <img src="https://cloud.githubusercontent.com/assets/5456665/17822364/940bded8-6678-11e6-9603-b84d75bccec1.gif" /> </td></tr></table>
+For example, to download a directory named `TheGitDown-Images.zip` without including the root directory, your URL would look like this: 
 
-##### Advanced Usage
+```https://gitdown.xyz/#/home?url=https://github.com/taylorsegell/TheGitDown/tree/master/res/images&rootDirectory=false```. 
 
-A typical download URL will look like this- `https://minhaskamal.github.io/TheGitDown/#/home?url=<link>&fileName=<name>&rootDirectory=<true or false or name>`
-
-Now, if you want to download this directory- **`https://github.com/MinhasKamal/TheGitDown/tree/master/res/images`** with this file name- **`TheGitDown-Images.zip`** and this root directory name- **`ImagesOfTheGitDown`**, then the URL will be- https://minhaskamal.github.io/TheGitDown/#/home?url=https://github.com/MinhasKamal/TheGitDown/tree/master/res/images&fileName=TheGitDown-Images&rootDirectory=ImagesOfTheGitDown
-
-In default, value of `fileName` and `rootDirectory` is set to the name of the downloading file or directory. If you do not want to add the directory itself in the zip, then set `rootDirectory=false`. Like: this link- https://minhaskamal.github.io/TheGitDown/#/home?url=https://github.com/MinhasKamal/TheGitDown/tree/master/res/images&rootDirectory=false, will download a file named **`images.zip`**; however the root directory- `"images"`, will not be included in the zip.
-
-If you want to download file- **`https://github.com/MinhasKamal/TheGitDown/blob/master/res/images/TheGitDown.png`** with name- **`TheGitDownIcon.zip`**, then the link will be- https://minhaskamal.github.io/TheGitDown/#/home?url=https://github.com/MinhasKamal/TheGitDown/blob/master/res/images/TheGitDown.png&fileName=TheGitDownIcon
+This downloads a zip file named `images.zip`, minus the root folder.
 
 ### License
-<a rel="license" href="https://opensource.org/licenses/MIT"><img alt="MIT License" src="https://cloud.githubusercontent.com/assets/5456665/18950087/fbe0681a-865f-11e6-9552-e59d038d5913.png" width="60em" height=auto/></a><br/><a href="https://github.com/MinhasKamal/TheGitDown">TheGitDown</a> is licensed under <a rel="license" href="https://opensource.org/licenses/MIT">MIT License</a>.
+
+Oh, and it's all under the [MIT License](https://opensource.org/licenses/MIT), so feel free to use and share it!
+
+So, why not give it a go? It's a game-changer for GitHub downloads! 🚀💻
