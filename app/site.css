@@ -65,7 +65,7 @@ a:hover {
 }
 
 .toast-down {
-  background-image: url("../res/images/warning.png") !important;
+  background-image: url("../images/warning.png") !important;
   background-color: var(--lightgreen);
 }
 
@@ -139,7 +139,6 @@ body {
 
 .footer div.bottom {
   min-width: 0;
-  overflow-x: scroll;
   padding-top: 1em;
   gap: 2em;
   color: grey;

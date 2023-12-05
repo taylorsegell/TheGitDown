@@ -4,7 +4,7 @@ Want to give it a try? Head over to [TheGitDown](https://gitdown.xyz) and see ho
 
 ### How Does It Work?
 
-![See it in action](https://cloud.githubusercontent.com/assets/5456665/17822364/940bded8-6678-11e6-9603-b84d75bccec1.gif)
+![See it in action](https://raw.githubusercontent.com/taylorsegell/TheGitDown/main/images/screenshot.png?token=GHSAT0AAAAAACKJQJKJU3KL32YJHEW7FYQWZLPW6SA)
 
 ### Getting a Bit More Technical
 
@@ -14,7 +14,7 @@ With TheGitDown, you can customize your download. Let's say you want to download
 
 For example, to download a directory named `TheGitDown-Images.zip` without including the root directory, your URL would look like this: 
 
-```https://gitdown.xyz/#/home?url=https://github.com/taylorsegell/TheGitDown/tree/master/res/images&rootDirectory=false```. 
+```https://gitdown.xyz/#/home?url=https://github.com/taylorsegell/TheGitDown/tree/master/images&rootDirectory=false```. 
 
 This downloads a zip file named `images.zip`, minus the root folder.
 
