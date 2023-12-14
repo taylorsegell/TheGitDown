@@ -4,7 +4,7 @@ Want to give it a try? Head over to [TheGitDown](https://gitdown.xyz) and see ho
 
 ### How Does It Work?
 
-![See it in action](https://raw.githubusercontent.com/taylorsegell/TheGitDown/main/images/screenshot.png?token=GHSAT0AAAAAACKJQJKJU3KL32YJHEW7FYQWZLPW6SA)
+![See it in action](images/screenshot.png)
 
 ### Getting a Bit More Technical
 
