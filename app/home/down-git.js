@@ -14,16 +14,6 @@ TheGitDownModule.factory('TheGitDownService', [
     function ($http, $q) {
         var repoInfo = {};
 
-
-        var authToken = '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';
-
-        var config = {
-            headers: {
-                'Authorization': 'token ' + authToken
-            }
-        };
-    
-
         var parseInfo = function(parameters) {
             var repoPath = new URL(parameters.url).pathname;
             var splitPath = repoPath.split("/");
@@ -75,7 +65,7 @@ TheGitDownModule.factory('TheGitDownService', [
         }
 
         var mapFileAndDirectory = function(dirPaths, files, requestedPromises, progress){
-            $http.get(repoInfo.urlPrefix + dirPaths.pop() + repoInfo.urlPostfix, config).then(function(response) {
+            $http.get(repoInfo.urlPrefix + dirPaths.pop() + repoInfo.urlPostfix).then(function(response) {
                 for(var i=response.data.length-1; i>=0; i--){
                     if(response.data[i].type=="dir"){
                         dirPaths.push(response.data[i].path);
