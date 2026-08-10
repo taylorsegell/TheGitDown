@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { createLocalStorageCredentialStore } from '../domain/credentials'
+import {
+  createLocalStorageCredentialStore,
+  type CredentialStore,
+} from '../domain/credentials'
 import { downloadGitHubPath } from '../domain/download'
 import { createGitHubHttp } from '../domain/githubHttp'
 import { parseGitHubUrl } from '../domain/githubUrl'
@@ -8,6 +11,10 @@ import type { DownloadParams } from '../domain/types'
 import { mapDownloadErrorMessage } from '../ui/downloadErrorMessage'
 import { saveBlob } from '../ui/saveBlob'
 import { buildShareLink } from '../ui/shareLink'
+import { TokenSettings } from '../ui/TokenSettings'
+
+/** Shared with downloads + TokenSettings so PAT changes apply immediately. */
+const credentialStore: CredentialStore = createLocalStorageCredentialStore()
 
 type ProgressState = { downloaded: number; total: number }
 
@@ -38,10 +45,10 @@ export function HomePage() {
   const [progress, setProgress] = useState<ProgressState | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const http = useMemo(() => {
-    const credentials = createLocalStorageCredentialStore()
-    return createGitHubHttp({ credentials })
-  }, [])
+  const http = useMemo(
+    () => createGitHubHttp({ credentials: credentialStore }),
+    [],
+  )
 
   const runIdRef = useRef(0)
 
@@ -242,6 +249,8 @@ export function HomePage() {
           />
         )}
       </div>
+
+      <TokenSettings credentials={credentialStore} />
     </main>
   )
 }
