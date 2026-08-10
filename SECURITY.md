@@ -1,6 +1,6 @@
 # Security
 
-A GitHub personal access token (PAT) was previously committed in client source (`app/home/down-git.js`). That secret has been removed from the working tree. Operators and contributors should treat the following as mandatory.
+A GitHub personal access token (PAT) was previously committed in client source (legacy Angular path `app/home/down-git.js`). That secret has been removed from the working tree. Operators and contributors should treat the following as mandatory.
 
 ## 1. Rotate any previously exposed tokens
 
@@ -8,7 +8,7 @@ Assume any token that ever appeared in this repository (working tree or git hist
 
 ## 2. Never commit PATs
 
-Do not commit GitHub PATs, API keys, or other secrets into this repository. Prefer the unauthenticated public GitHub API with clear rate-limit UX, or an optional user-supplied token stored only in memory / `localStorage` — never in source control.
+Do not commit GitHub PATs, API keys, or other secrets into this repository. Prefer the unauthenticated public GitHub API with clear rate-limit UX, or an optional user-supplied token stored only in memory / `localStorage` — never in source control. There is no TheGitDown backend that receives tokens.
 
 ## 3. History scrub is out-of-band
 

@@ -1,29 +1,42 @@
-Hey there! 👋 Check out TheGitDown, a super handy tool for downloading files or creating download links from any **public directory or file on GitHub**. It's an easy way to grab what you need without the hassle.
+# TheGitDown
 
-Want to give it a try? Head over to [TheGitDown](https://gitdown.xyz) and see how simple it is!
-
-### How Does It Work?
+Client-side tool for downloading a public GitHub file or directory as a zip — or sharing a one-click download link. Live at [gitdown.xyz](https://gitdown.xyz).
 
 ![See it in action](images/screenshot.png)
 
-### Getting a Bit More Technical
+## Deep links
 
-With TheGitDown, you can customize your download. Let's say you want to download a specific directory from GitHub as a zip file, and even rename it or exclude the root directory. It's all possible! Just tweak the URL in this format: 
+Customize the zip name or root-folder behavior via:
 
-```https://gitdown.xyz/#/home?url=<GitHub link>&fileName=<your chosen name>&rootDirectory=<true/false or specific name>```. 
+```
+https://gitdown.xyz/#/home?url=<GitHub link>&fileName=<name>&rootDirectory=<true|false|name>
+```
 
-For example, to download a directory named `TheGitDown-Images.zip` without including the root directory, your URL would look like this: 
+Example (directory zip without the root folder):
 
-```https://gitdown.xyz/#/home?url=https://github.com/taylorsegell/TheGitDown/tree/master/images&rootDirectory=false```. 
+```
+https://gitdown.xyz/#/home?url=https://github.com/taylorsegell/TheGitDown/tree/master/images&rootDirectory=false
+```
 
-This downloads a zip file named `images.zip`, minus the root folder.
+That downloads `images.zip` with the folder contents at the zip root.
 
-### Security
+## Optional GitHub token
 
-A GitHub PAT was previously exposed in client source and has been removed from the working tree. Operators should rotate any leaked credentials; do not commit tokens. History scrubbing (`git filter-repo` / BFG) is out-of-band — see [SECURITY.md](SECURITY.md).
+Unauthenticated GitHub API calls are rate-limited. Paste a personal access token in the app settings to raise limits; it is stored only in this browser’s `localStorage`, never sent to a TheGitDown backend (there isn’t one — the SPA talks to GitHub from the browser).
 
-### License
+## Security
 
-Oh, and it's all under the [MIT License](https://opensource.org/licenses/MIT), so feel free to use and share it!
+A GitHub PAT was previously exposed in client source and has been removed from the working tree. Rotate any leaked credentials; do not commit tokens. History scrubbing (`git filter-repo` / BFG) is operator-owned and out-of-band — see [SECURITY.md](SECURITY.md).
 
-So, why not give it a go? It's a game-changer for GitHub downloads! 🚀💻
+## Develop
+
+```bash
+npm install
+npm run dev      # Vite dev server
+npm test         # Vitest
+npm run build    # production static assets → dist/
+```
+
+## License
+
+[MIT](https://opensource.org/licenses/MIT)
