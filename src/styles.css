@@ -1,0 +1,54 @@
+:root {
+  --lightblk: #252930;
+  --blk: #111417;
+  --lightgreen: #bdd2c9;
+  --darkgreen: #6c7f76;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  color: #f1f1f1;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--darkgreen) 45%, transparent), transparent),
+    linear-gradient(165deg, var(--lightblk) 0%, var(--blk) 55%, #0a0c0e 100%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem 3rem;
+  text-align: center;
+}
+
+.home-brand {
+  margin: 0;
+  font-family: 'Rubik Mono One', 'IBM Plex Mono', monospace;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--lightgreen);
+  line-height: 1.1;
+}
+
+.home-tagline {
+  margin: 1rem 0 0;
+  max-width: 28rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--lightgreen) 70%, #f1f1f1);
+}
