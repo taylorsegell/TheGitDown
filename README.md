@@ -18,6 +18,10 @@ For example, to download a directory named `TheGitDown-Images.zip` without inclu
 
 This downloads a zip file named `images.zip`, minus the root folder.
 
+### Security
+
+A GitHub PAT was previously exposed in client source and has been removed from the working tree. Operators should rotate any leaked credentials; do not commit tokens. History scrubbing (`git filter-repo` / BFG) is out-of-band — see [SECURITY.md](SECURITY.md).
+
 ### License
 
 Oh, and it's all under the [MIT License](https://opensource.org/licenses/MIT), so feel free to use and share it!
