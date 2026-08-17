@@ -49,11 +49,11 @@ export function TokenSettings({ credentials }: TokenSettingsProps) {
   }
 
   return (
-    <section className="token-settings" aria-label="GitHub token settings">
+    <div className="token-settings" aria-label="GitHub token settings">
       <h2 className="token-settings-heading">Optional GitHub token</h2>
       <p className="token-settings-help">
-        Stored only in this browser (localStorage). Improves API rate limits for
-        private or heavy downloads.
+        Stored only in this browser. Raises GitHub API rate limits for larger
+        trees — never sent to a GitDown server.
       </p>
 
       <label className="token-settings-label" htmlFor="github-token">
@@ -97,6 +97,6 @@ export function TokenSettings({ credentials }: TokenSettingsProps) {
           {status}
         </p>
       )}
-    </section>
+    </div>
   )
 }
