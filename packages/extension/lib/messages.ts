@@ -1,9 +1,22 @@
-import type { DownloadError, RepoRef } from '@gitdown/core'
+import {
+  createGitHubHttp,
+  downloadGitHubPath,
+  type CredentialStore,
+  type RepoRef,
+} from '@gitdown/core'
+import { downloadBlobZip, downloadRemoteUrl } from './chromeDownloads'
 import {
   createChromeStorageCredentialStore,
   type ChromeStorageCredentialStore,
 } from './credentialStore'
 import { detectGithubUrl } from './detect'
+import {
+  createDownloadJob,
+  type DownloadJob,
+  type DownloadJobState,
+} from './downloadJob'
+
+export type { DownloadJob, DownloadJobState }
 
 export type ExtRequest =
   | { type: 'GET_ACTIVE_DETECTION' }
@@ -23,11 +36,10 @@ export type Detection =
       reason: 'not_github' | 'invalid_url'
     }
 
-export type DownloadJobState =
-  | { status: 'idle' }
-  | { status: 'running'; url: string; downloaded: number; total: number }
-  | { status: 'done'; url: string; fileName: string }
-  | { status: 'fail'; url: string; error: DownloadError }
+export type ExtEvent =
+  | { type: 'DETECTION'; detection: Detection }
+  | { type: 'JOB_STATE'; state: DownloadJobState }
+  | { type: 'AUTH_STATUS'; hasToken: boolean }
 
 export type ExtResponse<T extends ExtRequest['type']> = T extends 'GET_ACTIVE_DETECTION'
   ? { detection: Detection }
@@ -79,9 +91,33 @@ async function defaultActiveTabsQuery(
 export type HandleExtRequestDeps = {
   tabsQuery?: ActiveTabsQuery
   credentialStore?: ChromeStorageCredentialStore
+  job?: DownloadJob
 }
 
 let productionCredentialStore: ChromeStorageCredentialStore | undefined
+let productionJob: DownloadJob | undefined
+let testJobOverride: DownloadJob | undefined
+const jobStateListeners = new Set<(state: DownloadJobState) => void>()
+
+export function addJobStateListener(
+  listener: (state: DownloadJobState) => void,
+): () => void {
+  jobStateListeners.add(listener)
+  return () => {
+    jobStateListeners.delete(listener)
+  }
+}
+
+/** Test seam: inject a job used when handleExtRequest is called without deps.job. */
+export function setProductionDownloadJobForTests(job: DownloadJob | undefined): void {
+  testJobOverride = job
+}
+
+export function resetExtensionJobsForTests(): void {
+  testJobOverride = undefined
+  productionJob = undefined
+  productionCredentialStore = undefined
+}
 
 function getProductionCredentialStore(): ChromeStorageCredentialStore {
   productionCredentialStore ??= createChromeStorageCredentialStore(
@@ -98,6 +134,46 @@ async function resolveCredentialStore(
   return store
 }
 
+function emitJobState(state: DownloadJobState): void {
+  for (const listener of jobStateListeners) {
+    listener(state)
+  }
+  try {
+    void Promise.resolve(
+      browser.runtime.sendMessage({ type: 'JOB_STATE', state } satisfies ExtEvent),
+    ).catch(() => {
+      // popup/options may be closed; the job still finishes
+    })
+  } catch {
+    // runtime may be unavailable in tests
+  }
+}
+
+function getOrCreateProductionJob(store: ChromeStorageCredentialStore): DownloadJob {
+  if (productionJob) {
+    return productionJob
+  }
+
+  const credentials: CredentialStore = {
+    getToken: () => store.getToken(),
+    setToken: () => {},
+    clearToken: () => {},
+  }
+
+  productionJob = createDownloadJob({
+    downloadGitHubPath,
+    http: createGitHubHttp({ credentials }),
+    saveBlobZip: downloadBlobZip,
+    saveRemoteUrl: downloadRemoteUrl,
+    onState: emitJobState,
+  })
+  return productionJob
+}
+
+function resolveJob(deps: HandleExtRequestDeps): DownloadJob | undefined {
+  return deps.job ?? testJobOverride ?? productionJob
+}
+
 export async function handleExtRequest(
   msg: ExtRequest,
   deps: HandleExtRequestDeps = {},
@@ -108,12 +184,27 @@ export async function handleExtRequest(
       const tabs = await tabsQuery({ active: true, currentWindow: true })
       return { detection: detectGithubUrl(tabs[0]?.url, 'tab') }
     }
-    case 'GET_JOB_STATE':
-      return { state: { status: 'idle' } }
-    case 'START_DOWNLOAD':
-      return { accepted: false, reason: 'not_implemented' }
-    case 'CANCEL_DOWNLOAD':
-      return { accepted: false }
+    case 'GET_JOB_STATE': {
+      const job = resolveJob(deps)
+      return { state: job?.getState() ?? { status: 'idle' } }
+    }
+    case 'START_DOWNLOAD': {
+      if (deps.job) {
+        return deps.job.start(msg.url)
+      }
+      if (testJobOverride) {
+        return testJobOverride.start(msg.url)
+      }
+      const store = await resolveCredentialStore(deps)
+      return getOrCreateProductionJob(store).start(msg.url)
+    }
+    case 'CANCEL_DOWNLOAD': {
+      const job = resolveJob(deps)
+      if (!job) {
+        return { accepted: false }
+      }
+      return job.cancel()
+    }
     case 'AUTH_GET_STATUS': {
       const store = await resolveCredentialStore(deps)
       return { hasToken: Boolean(store.getToken()) }

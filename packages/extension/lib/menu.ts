@@ -44,7 +44,7 @@ export type RegisterContextMenusDeps = {
   startDownload?: StartDownload
 }
 
-/** Spy-seam: menu clicks call this after a successful detect. Still a stub until M5. */
+/** Menu clicks call this after a successful detect. */
 export async function startDownload(url: string) {
   return handleExtRequest({ type: 'START_DOWNLOAD', url })
 }
