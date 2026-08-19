@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import type { CredentialStore } from '../domain/credentials'
+import type { CredentialStore } from '@gitdown/core'
 
 export type TokenSettingsProps = {
   credentials: CredentialStore

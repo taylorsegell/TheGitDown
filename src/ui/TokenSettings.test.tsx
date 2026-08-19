@@ -4,7 +4,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import {
   createLocalStorageCredentialStore,
   type CredentialStore,
-} from '../domain/credentials'
+} from '@gitdown/core'
 import { TokenSettings } from './TokenSettings'
 
 beforeAll(() => {

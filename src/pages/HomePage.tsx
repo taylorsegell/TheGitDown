@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
+  createGitHubHttp,
   createLocalStorageCredentialStore,
   type CredentialStore,
-} from '../domain/credentials'
-import { createGitHubHttp } from '../domain/githubHttp'
+} from '@gitdown/core'
 import { createDownloadJob, paramsFromQuery } from '../ui/downloadJob'
 import { GridPattern } from '../ui/GridPattern'
 import { RobotHero } from '../ui/RobotHero'

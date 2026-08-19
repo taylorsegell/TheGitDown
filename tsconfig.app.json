@@ -17,7 +17,10 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "paths": {
+      "@gitdown/core": ["./packages/core/src/index.ts"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "packages/core/src"]
 }

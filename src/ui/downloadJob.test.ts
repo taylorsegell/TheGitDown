@@ -1,10 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { DownloadError, GitHubHttp } from '../domain/types'
-import {
-  createDownloadJob,
-  mapDownloadErrorMessage,
-  paramsFromQuery,
-} from './downloadJob'
+import { mapDownloadErrorMessage } from '@gitdown/core'
+import type { DownloadError, GitHubHttp } from '@gitdown/core'
+import { createDownloadJob, paramsFromQuery } from './downloadJob'
 
 function createHttp(handlers: {
   getJson?: (url: string) => Promise<{ status: number; headers: Headers; data: unknown }>
@@ -48,6 +45,11 @@ describe('mapDownloadErrorMessage', () => {
       message: 'API limit',
     }
     const msg = mapDownloadErrorMessage(error)
+    expect(msg.toLowerCase()).toContain('rate')
+  })
+
+  it('rate_limited with empty message still mentions rate', () => {
+    const msg = mapDownloadErrorMessage({ kind: 'rate_limited', message: '' })
     expect(msg.toLowerCase()).toContain('rate')
   })
 
