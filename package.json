@@ -16,7 +16,7 @@
     "ext:build:firefox": "npm run build:firefox -w gitdown"
   },
   "dependencies": {
-    "@gitdown/core": "workspace:*",
+    "@gitdown/core": "*",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
     "react": "^19.1.1",
