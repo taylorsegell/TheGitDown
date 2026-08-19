@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "ext:dev": "npm run dev -w gitdown",
+    "ext:build": "npm run build -w gitdown",
+    "ext:build:firefox": "npm run build:firefox -w gitdown"
   },
   "dependencies": {
     "@gitdown/core": "workspace:*",

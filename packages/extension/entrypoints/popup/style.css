@@ -1,0 +1,19 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #0f172a;
+  background: #fff;
+}
+
+body {
+  margin: 0;
+  min-width: 240px;
+}
+
+main {
+  padding: 1rem 1.25rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
