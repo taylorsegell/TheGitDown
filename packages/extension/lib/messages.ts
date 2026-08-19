@@ -1,4 +1,8 @@
 import type { DownloadError, RepoRef } from '@gitdown/core'
+import {
+  createChromeStorageCredentialStore,
+  type ChromeStorageCredentialStore,
+} from './credentialStore'
 import { detectGithubUrl } from './detect'
 
 export type ExtRequest =
@@ -74,6 +78,24 @@ async function defaultActiveTabsQuery(
 
 export type HandleExtRequestDeps = {
   tabsQuery?: ActiveTabsQuery
+  credentialStore?: ChromeStorageCredentialStore
+}
+
+let productionCredentialStore: ChromeStorageCredentialStore | undefined
+
+function getProductionCredentialStore(): ChromeStorageCredentialStore {
+  productionCredentialStore ??= createChromeStorageCredentialStore(
+    browser.storage.local,
+  )
+  return productionCredentialStore
+}
+
+async function resolveCredentialStore(
+  deps: HandleExtRequestDeps,
+): Promise<ChromeStorageCredentialStore> {
+  const store = deps.credentialStore ?? getProductionCredentialStore()
+  await store.hydrate()
+  return store
 }
 
 export async function handleExtRequest(
@@ -92,11 +114,20 @@ export async function handleExtRequest(
       return { accepted: false, reason: 'not_implemented' }
     case 'CANCEL_DOWNLOAD':
       return { accepted: false }
-    case 'AUTH_GET_STATUS':
-      return { hasToken: false }
-    case 'AUTH_SET_TOKEN':
-    case 'AUTH_CLEAR_TOKEN':
+    case 'AUTH_GET_STATUS': {
+      const store = await resolveCredentialStore(deps)
+      return { hasToken: Boolean(store.getToken()) }
+    }
+    case 'AUTH_SET_TOKEN': {
+      const store = await resolveCredentialStore(deps)
+      await store.setToken(msg.token)
       return { ok: true }
+    }
+    case 'AUTH_CLEAR_TOKEN': {
+      const store = await resolveCredentialStore(deps)
+      await store.clearToken()
+      return { ok: true }
+    }
     default: {
       const _exhaustive: never = msg
       throw new Error(`Unhandled ExtRequest: ${JSON.stringify(_exhaustive)}`)
