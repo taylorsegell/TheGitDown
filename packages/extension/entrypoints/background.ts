@@ -1,8 +1,21 @@
 import { registerContextMenus } from '../lib/menu'
-import { handleExtRequest, isExtRequest } from '../lib/messages'
+import {
+  addJobStateListener,
+  handleExtRequest,
+  isExtRequest,
+} from '../lib/messages'
 
 export default defineBackground(() => {
   registerContextMenus()
+
+  addJobStateListener((state) => {
+    const text = state.status === 'running' ? '…' : ''
+    try {
+      void browser.action.setBadgeText({ text })
+    } catch {
+      // action badge is optional; ignore if the API is unavailable
+    }
+  })
 
   browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!isExtRequest(message)) {

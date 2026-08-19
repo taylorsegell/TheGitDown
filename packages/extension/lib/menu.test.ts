@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { DownloadJob } from './downloadJob'
 import {
   GITDOWN_LINK_MENU_ID,
   GITDOWN_PAGE_MENU_ID,
@@ -8,6 +9,7 @@ import {
   type MenuClickInfo,
   type MenuTab,
 } from './menu'
+import { resetExtensionJobsForTests, setProductionDownloadJobForTests } from './messages'
 
 function mockContextMenus() {
   const create = vi.fn()
@@ -119,10 +121,21 @@ describe('registerContextMenus', () => {
 })
 
 describe('startDownload', () => {
-  it('invokes the START_DOWNLOAD stub', async () => {
+  afterEach(() => {
+    resetExtensionJobsForTests()
+  })
+
+  it('sends START_DOWNLOAD through handleExtRequest', async () => {
+    const job: DownloadJob = {
+      start: vi.fn(() => ({ accepted: true })),
+      cancel: vi.fn(() => ({ accepted: false })),
+      getState: vi.fn(() => ({ status: 'idle' })),
+    }
+    setProductionDownloadJobForTests(job)
+
     await expect(startDownload('https://github.com/a/b')).resolves.toEqual({
-      accepted: false,
-      reason: 'not_implemented',
+      accepted: true,
     })
+    expect(job.start).toHaveBeenCalledWith('https://github.com/a/b')
   })
 })

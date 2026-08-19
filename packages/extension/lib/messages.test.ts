@@ -1,6 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createChromeStorageCredentialStore } from './credentialStore'
-import { handleExtRequest, type ActiveTabsQuery } from './messages'
+import type { DownloadJob } from './downloadJob'
+import {
+  handleExtRequest,
+  resetExtensionJobsForTests,
+  type ActiveTabsQuery,
+} from './messages'
 
 function mockTabsQuery(url: string | undefined): ActiveTabsQuery {
   return async (queryInfo) => {
@@ -45,20 +50,69 @@ function authDeps() {
   }
 }
 
-describe('handleExtRequest stubs', () => {
+function mockJob(overrides?: Partial<DownloadJob>): DownloadJob {
+  return {
+    start: vi.fn(() => ({ accepted: true })),
+    cancel: vi.fn(() => ({ accepted: false })),
+    getState: vi.fn(() => ({ status: 'idle' as const })),
+    ...overrides,
+  }
+}
+
+describe('handleExtRequest', () => {
+  afterEach(() => {
+    resetExtensionJobsForTests()
+  })
+
   it('{ type: "GET_JOB_STATE" } returns idle state', async () => {
     expect(await handleExtRequest({ type: 'GET_JOB_STATE' })).toEqual({
       state: { status: 'idle' },
     })
   })
 
-  it('{ type: "START_DOWNLOAD" } is not implemented', async () => {
-    expect(
-      await handleExtRequest({
-        type: 'START_DOWNLOAD',
+  it('{ type: "GET_JOB_STATE" } returns the injected job state', async () => {
+    const job = mockJob({
+      getState: () => ({
+        status: 'running',
         url: 'https://github.com/a/b',
+        downloaded: 2,
+        total: 4,
       }),
-    ).toEqual({ accepted: false, reason: 'not_implemented' })
+    })
+    expect(await handleExtRequest({ type: 'GET_JOB_STATE' }, { job })).toEqual({
+      state: {
+        status: 'running',
+        url: 'https://github.com/a/b',
+        downloaded: 2,
+        total: 4,
+      },
+    })
+  })
+
+  it('{ type: "START_DOWNLOAD" } starts the injected job', async () => {
+    const job = mockJob()
+    expect(
+      await handleExtRequest(
+        {
+          type: 'START_DOWNLOAD',
+          url: 'https://github.com/a/b',
+        },
+        { job },
+      ),
+    ).toEqual({ accepted: true })
+    expect(job.start).toHaveBeenCalledWith('https://github.com/a/b')
+  })
+
+  it('{ type: "START_DOWNLOAD" } rejects when the job is busy', async () => {
+    const job = mockJob({
+      start: vi.fn(() => ({ accepted: false, reason: 'busy' })),
+    })
+    expect(
+      await handleExtRequest(
+        { type: 'START_DOWNLOAD', url: 'https://github.com/c/d' },
+        { job },
+      ),
+    ).toEqual({ accepted: false, reason: 'busy' })
   })
 
   it('AUTH_GET_STATUS JSON does not include the stored token', async () => {
@@ -93,10 +147,20 @@ describe('handleExtRequest stubs', () => {
     expect(response.detection.ref.repo).toBe('b')
   })
 
-  it('CANCEL_DOWNLOAD is not accepted', async () => {
+  it('CANCEL_DOWNLOAD is not accepted when no job exists', async () => {
     expect(await handleExtRequest({ type: 'CANCEL_DOWNLOAD' })).toEqual({
       accepted: false,
     })
+  })
+
+  it('CANCEL_DOWNLOAD forwards to the injected job', async () => {
+    const job = mockJob({
+      cancel: vi.fn(() => ({ accepted: true })),
+    })
+    expect(
+      await handleExtRequest({ type: 'CANCEL_DOWNLOAD' }, { job }),
+    ).toEqual({ accepted: true })
+    expect(job.cancel).toHaveBeenCalledOnce()
   })
 
   it('AUTH_SET_TOKEN tok then AUTH_GET_STATUS hasToken true', async () => {
