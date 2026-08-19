@@ -8,7 +8,7 @@ Assume any token that ever appeared in this repository (working tree or git hist
 
 ## 2. Never commit PATs
 
-Do not commit GitHub PATs, API keys, or other secrets into this repository. Prefer the unauthenticated public GitHub API with clear rate-limit UX, or an optional user-supplied token stored only in memory / `localStorage` — never in source control. There is no TheGitDown backend that receives tokens.
+Do not commit GitHub PATs, API keys, or other secrets into this repository. Prefer the unauthenticated public GitHub API with clear rate-limit UX, or an optional user-supplied token stored only in memory / `localStorage` (website) or `chrome.storage.local` (companion extension) — never in source control. There is no TheGitDown backend that receives tokens; the extension PAT is not the gitdown.xyz `localStorage` token.
 
 ## 3. History scrub is out-of-band
 
