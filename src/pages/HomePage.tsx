@@ -1,39 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   createLocalStorageCredentialStore,
   type CredentialStore,
 } from '../domain/credentials'
-import { downloadGitHubPath } from '../domain/download'
 import { createGitHubHttp } from '../domain/githubHttp'
-import { parseGitHubUrl } from '../domain/githubUrl'
-import type { DownloadParams } from '../domain/types'
-import { mapDownloadErrorMessage } from '../ui/downloadErrorMessage'
+import { createDownloadJob, paramsFromQuery } from '../ui/downloadJob'
 import { GridPattern } from '../ui/GridPattern'
 import { RobotHero } from '../ui/RobotHero'
 import { saveBlob } from '../ui/saveBlob'
-import { buildShareLink } from '../ui/shareLink'
 import { TokenSettings } from '../ui/TokenSettings'
 
 /** Shared with downloads + TokenSettings so PAT changes apply immediately. */
 const credentialStore: CredentialStore = createLocalStorageCredentialStore()
 
-type ProgressState = { downloaded: number; total: number }
-
-function paramsFromQuery(
-  url: string,
-  fileName: string | null,
-  rootDirectory: string | null,
-): DownloadParams {
-  const params: DownloadParams = { url }
-  if (fileName != null && fileName !== '') {
-    params.fileName = fileName
-  }
-  if (rootDirectory != null && rootDirectory !== '') {
-    params.rootDirectory = rootDirectory
-  }
-  return params
-}
+const downloadJob = createDownloadJob({
+  http: createGitHubHttp({ credentials: credentialStore }),
+  save: saveBlob,
+  navigate: (url) => {
+    window.location.assign(url)
+  },
+})
 
 export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -42,18 +29,13 @@ export function HomePage() {
   const rootDirectoryFromQuery = searchParams.get('rootDirectory')
 
   const [urlInput, setUrlInput] = useState(urlFromQuery ?? '')
-  const [shareLink, setShareLink] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [urlInvalid, setUrlInvalid] = useState(false)
-  const [progress, setProgress] = useState<ProgressState | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const { error, urlInvalid, progress, isProcessing, shareLink } =
+    useSyncExternalStore(
+      downloadJob.subscribe,
+      downloadJob.getSnapshot,
+      downloadJob.getSnapshot,
+    )
 
-  const http = useMemo(
-    () => createGitHubHttp({ credentials: credentialStore }),
-    [],
-  )
-
-  const runIdRef = useRef(0)
   const urlInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToDownload = useCallback(() => {
@@ -65,57 +47,6 @@ export function HomePage() {
     window.setTimeout(() => urlInputRef.current?.focus(), reduced ? 0 : 450)
   }, [])
 
-  const startDownload = useCallback(
-    async (params: DownloadParams) => {
-      const runId = ++runIdRef.current
-
-      setError(null)
-      setUrlInvalid(false)
-      setShareLink('')
-      setProgress(null)
-      setIsProcessing(true)
-
-      try {
-        for await (const event of downloadGitHubPath(params, { http })) {
-          if (runId !== runIdRef.current) {
-            return
-          }
-
-          if (event.type === 'progress') {
-            setProgress({
-              downloaded: event.downloaded,
-              total: event.total,
-            })
-          } else if (event.type === 'redirect') {
-            setIsProcessing(false)
-            window.location.assign(event.url)
-            return
-          } else if (event.type === 'done') {
-            saveBlob(event.blob, event.fileName)
-            setIsProcessing(false)
-            setProgress(null)
-            return
-          } else if (event.type === 'fail') {
-            setError(mapDownloadErrorMessage(event.error))
-            setIsProcessing(false)
-            setProgress(null)
-            return
-          }
-        }
-      } catch (err) {
-        if (runId !== runIdRef.current) {
-          return
-        }
-        const message =
-          err instanceof Error ? err.message : 'Download failed unexpectedly'
-        setError(message)
-        setIsProcessing(false)
-        setProgress(null)
-      }
-    },
-    [http],
-  )
-
   // Deep-link: `#/home?url=…` (plus optional fileName / rootDirectory) auto-starts download.
   useEffect(() => {
     if (!urlFromQuery) {
@@ -123,33 +54,21 @@ export function HomePage() {
     }
 
     setUrlInput(urlFromQuery)
-    void startDownload(
+    void downloadJob.start(
       paramsFromQuery(urlFromQuery, fileNameFromQuery, rootDirectoryFromQuery),
     )
 
     return () => {
-      runIdRef.current += 1
+      downloadJob.cancel()
     }
-  }, [urlFromQuery, fileNameFromQuery, rootDirectoryFromQuery, startDownload])
+  }, [urlFromQuery, fileNameFromQuery, rootDirectoryFromQuery])
 
   function handleDownload() {
     const githubUrl = urlInput.trim()
-    if (!githubUrl) {
-      setError('Enter a GitHub file or directory URL')
-      setUrlInvalid(true)
+    if (!downloadJob.validate(githubUrl)) {
       urlInputRef.current?.focus()
       return
     }
-
-    const parsed = parseGitHubUrl(githubUrl)
-    if ('ok' in parsed && parsed.ok === false) {
-      setError(mapDownloadErrorMessage(parsed.error))
-      setUrlInvalid(true)
-      urlInputRef.current?.focus()
-      return
-    }
-
-    setUrlInvalid(false)
 
     const next = new URLSearchParams()
     next.set('url', githubUrl)
@@ -168,35 +87,16 @@ export function HomePage() {
 
     // If hash query already matches, the effect will not re-run — start here.
     if (alreadySynced) {
-      void startDownload(
+      void downloadJob.start(
         paramsFromQuery(githubUrl, fileNameFromQuery, rootDirectoryFromQuery),
       )
     }
   }
 
   function handleCreateLink() {
-    const githubUrl = urlInput.trim()
-    if (!githubUrl) {
-      setError('Enter a GitHub file or directory URL')
-      setShareLink('')
-      setUrlInvalid(true)
+    if (!downloadJob.share(window.location.origin, urlInput)) {
       urlInputRef.current?.focus()
-      return
     }
-
-    const parsed = parseGitHubUrl(githubUrl)
-    if ('ok' in parsed && parsed.ok === false) {
-      setError(mapDownloadErrorMessage(parsed.error))
-      setShareLink('')
-      setUrlInvalid(true)
-      urlInputRef.current?.focus()
-      return
-    }
-
-    setUrlInvalid(false)
-
-    setError(null)
-    setShareLink(buildShareLink(window.location.origin, githubUrl))
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {

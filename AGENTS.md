@@ -38,7 +38,7 @@ src/
   App.tsx                  # HashRouter; `/` → `/home`
   styles.css
   pages/
-    HomePage.tsx           # paste URL, download / share, progress, deep-link
+    HomePage.tsx           # schematic: field, buttons, deep-link trigger
   domain/
     githubUrl.ts           # parse GitHub file/dir/repo URLs
     githubHttp.ts          # Contents / raw / Repos fetch + auth header
@@ -48,10 +48,9 @@ src/
     zip.ts                 # JSZip assembly
     types.ts
   ui/
+    downloadJob.ts         # download / share job (state + adapters)
     TokenSettings.tsx      # optional PAT localStorage UI
-    shareLink.ts           # origin-based `#/home?url=…` links
-    saveBlob.ts            # FileSaver wrapper
-    downloadErrorMessage.ts
+    saveBlob.ts            # FileSaver save adapter
 images/                    # brand, screenshot
 README.md
 SECURITY.md
