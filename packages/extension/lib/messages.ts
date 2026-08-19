@@ -1,4 +1,5 @@
 import type { DownloadError, RepoRef } from '@gitdown/core'
+import { detectGithubUrl } from './detect'
 
 export type ExtRequest =
   | { type: 'GET_ACTIVE_DETECTION' }
@@ -60,17 +61,31 @@ export function isExtRequest(msg: unknown): msg is ExtRequest {
   )
 }
 
-export function handleExtRequest(msg: ExtRequest): ExtResponse<ExtRequest['type']> {
+/** Injectable so tests can supply a tab URL without `browser.tabs`. */
+export type ActiveTabsQuery = (
+  queryInfo: { active: true; currentWindow: true },
+) => Promise<ReadonlyArray<{ url?: string }>>
+
+async function defaultActiveTabsQuery(
+  queryInfo: { active: true; currentWindow: true },
+): Promise<ReadonlyArray<{ url?: string }>> {
+  return browser.tabs.query(queryInfo)
+}
+
+export type HandleExtRequestDeps = {
+  tabsQuery?: ActiveTabsQuery
+}
+
+export async function handleExtRequest(
+  msg: ExtRequest,
+  deps: HandleExtRequestDeps = {},
+): Promise<ExtResponse<ExtRequest['type']>> {
   switch (msg.type) {
-    case 'GET_ACTIVE_DETECTION':
-      return {
-        detection: {
-          ok: false,
-          source: 'tab',
-          url: null,
-          reason: 'not_github',
-        },
-      }
+    case 'GET_ACTIVE_DETECTION': {
+      const tabsQuery = deps.tabsQuery ?? defaultActiveTabsQuery
+      const tabs = await tabsQuery({ active: true, currentWindow: true })
+      return { detection: detectGithubUrl(tabs[0]?.url, 'tab') }
+    }
     case 'GET_JOB_STATE':
       return { state: { status: 'idle' } }
     case 'START_DOWNLOAD':

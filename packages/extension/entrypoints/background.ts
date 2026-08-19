@@ -5,7 +5,7 @@ export default defineBackground(() => {
     if (!isExtRequest(message)) {
       return
     }
-    sendResponse(handleExtRequest(message))
+    void handleExtRequest(message).then(sendResponse)
     return true
   })
 })
