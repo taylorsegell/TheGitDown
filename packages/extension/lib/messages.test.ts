@@ -1,10 +1,47 @@
 import { describe, expect, it } from 'vitest'
+import { createChromeStorageCredentialStore } from './credentialStore'
 import { handleExtRequest, type ActiveTabsQuery } from './messages'
 
 function mockTabsQuery(url: string | undefined): ActiveTabsQuery {
   return async (queryInfo) => {
     expect(queryInfo).toEqual({ active: true, currentWindow: true })
     return [{ url }]
+  }
+}
+
+function createMemoryStorageArea() {
+  const data = new Map<string, unknown>()
+  const area = {
+    async get(keys: string | string[]) {
+      const list = Array.isArray(keys) ? keys : [keys]
+      const out: Record<string, unknown> = {}
+      for (const k of list) {
+        if (data.has(k)) {
+          out[k] = data.get(k)
+        }
+      }
+      return out
+    },
+    async set(items: Record<string, unknown>) {
+      for (const [k, v] of Object.entries(items)) {
+        data.set(k, v)
+      }
+    },
+    async remove(keys: string | string[]) {
+      const list = Array.isArray(keys) ? keys : [keys]
+      for (const k of list) {
+        data.delete(k)
+      }
+    },
+  }
+  return { area, data }
+}
+
+function authDeps() {
+  const { area, data } = createMemoryStorageArea()
+  return {
+    credentialStore: createChromeStorageCredentialStore(area),
+    data,
   }
 }
 
@@ -24,15 +61,19 @@ describe('handleExtRequest stubs', () => {
     ).toEqual({ accepted: false, reason: 'not_implemented' })
   })
 
-  it('AUTH_GET_STATUS stub JSON has no token keys', async () => {
-    const response = await handleExtRequest({ type: 'AUTH_GET_STATUS' })
-    expect(response).toEqual({ hasToken: false })
+  it('AUTH_GET_STATUS JSON does not include the stored token', async () => {
+    const deps = authDeps()
+    await handleExtRequest({ type: 'AUTH_SET_TOKEN', token: 'abc' }, deps)
+
+    const response = await handleExtRequest({ type: 'AUTH_GET_STATUS' }, deps)
+    expect(response).toEqual({ hasToken: true })
+    expect(Object.keys(response)).toEqual(['hasToken'])
 
     const json = JSON.stringify(response)
+    expect(json).not.toContain('abc')
     expect(json).not.toContain('"token"')
     expect(json).not.toContain('"pat"')
     expect(json).not.toContain('"githubToken"')
-    expect(Object.keys(response)).toEqual(['hasToken'])
   })
 
   it('GET_ACTIVE_DETECTION with mocked GitHub tab URL returns ok: true', async () => {
@@ -58,15 +99,38 @@ describe('handleExtRequest stubs', () => {
     })
   })
 
-  it('AUTH_SET_TOKEN and AUTH_CLEAR_TOKEN are no-op oks', async () => {
+  it('AUTH_SET_TOKEN tok then AUTH_GET_STATUS hasToken true', async () => {
+    const deps = authDeps()
     expect(
-      await handleExtRequest({
-        type: 'AUTH_SET_TOKEN',
-        token: 'secret-should-not-persist',
-      }),
+      await handleExtRequest({ type: 'AUTH_SET_TOKEN', token: 'tok' }, deps),
     ).toEqual({ ok: true })
-    expect(await handleExtRequest({ type: 'AUTH_CLEAR_TOKEN' })).toEqual({
+    expect(await handleExtRequest({ type: 'AUTH_GET_STATUS' }, deps)).toEqual({
+      hasToken: true,
+    })
+    expect(deps.data.get('gitdown.githubToken')).toBe('tok')
+  })
+
+  it('AUTH_CLEAR_TOKEN then hasToken false', async () => {
+    const deps = authDeps()
+    await handleExtRequest({ type: 'AUTH_SET_TOKEN', token: 'tok' }, deps)
+    expect(await handleExtRequest({ type: 'AUTH_CLEAR_TOKEN' }, deps)).toEqual({
       ok: true,
     })
+    expect(await handleExtRequest({ type: 'AUTH_GET_STATUS' }, deps)).toEqual({
+      hasToken: false,
+    })
+    expect(deps.data.has('gitdown.githubToken')).toBe(false)
+  })
+
+  it('AUTH_SET_TOKEN empty/whitespace clears the stored token', async () => {
+    const deps = authDeps()
+    await handleExtRequest({ type: 'AUTH_SET_TOKEN', token: 'tok' }, deps)
+    expect(
+      await handleExtRequest({ type: 'AUTH_SET_TOKEN', token: '   ' }, deps),
+    ).toEqual({ ok: true })
+    expect(await handleExtRequest({ type: 'AUTH_GET_STATUS' }, deps)).toEqual({
+      hasToken: false,
+    })
+    expect(deps.data.has('gitdown.githubToken')).toBe(false)
   })
 })
