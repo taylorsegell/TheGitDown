@@ -1,56 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * A small companion robot face that tracks the pointer, standing in for a
- * larger 3D robot that turned out to be an unreliable dependency for a
- * static, client-only site (WebGL context loss under long dev sessions,
- * ~380KB of extra JS for a purely decorative element).
+ * Schematic companion: a square CRT face whose eyes track the pointer.
+ * Lives in the hero, drawn in the same square language as the download instrument.
  */
-
-export interface RobotHeroProps {
-  backgroundText?: string
-  repoHref?: string
-  onDownloadClick?: () => void
-}
-
-function DownloadIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={16}
-      height={16}
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 3v12" />
-      <path d="m7 11 5 5 5-5" />
-      <path d="M4 19h16" />
-    </svg>
-  )
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={14}
-      height={14}
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M7 17 17 7" />
-      <path d="M9 7h8v8" />
-    </svg>
-  )
-}
 
 function HeartIcon() {
   return (
@@ -62,14 +15,38 @@ function HeartIcon() {
 
 const EYE_TRAVEL_PX = 5
 
-function useTrackedEyeOffset(faceRef: React.RefObject<HTMLElement | null>) {
+function useCanTrackPointer() {
+  const [canTrack, setCanTrack] = useState(false)
+
+  useEffect(() => {
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const pointer = window.matchMedia('(pointer: fine)')
+
+    function update() {
+      setCanTrack(!motion.matches && pointer.matches)
+    }
+
+    update()
+    motion.addEventListener('change', update)
+    pointer.addEventListener('change', update)
+    return () => {
+      motion.removeEventListener('change', update)
+      pointer.removeEventListener('change', update)
+    }
+  }, [])
+
+  return canTrack
+}
+
+function useTrackedEyeOffset(
+  faceRef: React.RefObject<HTMLElement | null>,
+  enabled: boolean,
+) {
   const [offset, setOffset] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return
-    }
-    if (!window.matchMedia('(pointer: fine)').matches) {
+    if (!enabled) {
+      setOffset({ x: 0, y: 0 })
       return
     }
 
@@ -102,14 +79,22 @@ function useTrackedEyeOffset(faceRef: React.RefObject<HTMLElement | null>) {
       window.removeEventListener('pointermove', handlePointerMove)
       if (frame) cancelAnimationFrame(frame)
     }
-  }, [faceRef])
+  }, [enabled, faceRef])
 
   return offset
 }
 
-function RobotFace({ isLoved, onTap }: { isLoved: boolean; onTap: () => void }) {
+function RobotFace({
+  isLoved,
+  onTap,
+  trackPointer,
+}: {
+  isLoved: boolean
+  onTap: () => void
+  trackPointer: boolean
+}) {
   const faceRef = useRef<HTMLButtonElement>(null)
-  const eyeOffset = useTrackedEyeOffset(faceRef)
+  const eyeOffset = useTrackedEyeOffset(faceRef, trackPointer)
   const eyeStyle = { transform: `translate(${eyeOffset.x}px, ${eyeOffset.y}px)` }
 
   return (
@@ -134,40 +119,10 @@ function RobotFace({ isLoved, onTap }: { isLoved: boolean; onTap: () => void }) 
   )
 }
 
-function RobotNav({
-  repoHref,
-  onDownloadClick,
-}: {
-  repoHref: string
-  onDownloadClick?: () => void
-}) {
-  return (
-    <nav className="robot-nav">
-      <div className="robot-nav-inner">
-        <div className="robot-nav-row">
-          <a className="robot-nav-pill robot-nav-pill-ghost" href={repoHref} target="_blank" rel="noreferrer">
-            GitHub
-            <ExternalLinkIcon />
-          </a>
-          <button type="button" className="robot-nav-pill robot-nav-pill-cta" onClick={onDownloadClick}>
-            Download
-            <DownloadIcon />
-          </button>
-        </div>
-
-        <div className="robot-nav-divider" />
-      </div>
-    </nav>
-  )
-}
-
-export function RobotHero({
-  backgroundText = 'GITDOWN',
-  repoHref = 'https://github.com/Taylorsegell/TheGitDown',
-  onDownloadClick,
-}: RobotHeroProps = {}) {
+export function RobotHero() {
   const [isLoved, setIsLoved] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const trackPointer = useCanTrackPointer()
 
   useEffect(() => {
     return () => {
@@ -181,23 +136,16 @@ export function RobotHero({
     timeoutRef.current = setTimeout(() => setIsLoved(false), 2000)
   }
 
+  const hint = isLoved
+    ? 'Aw, thanks!'
+    : trackPointer
+      ? 'Tap the face to say hi'
+      : 'Tap the face to say hi'
+
   return (
-    <section className="robot-hero" aria-label="GitDown's robot">
-      <div className="robot-hero-bgtext" aria-hidden="true">
-        <h2>{backgroundText}</h2>
-      </div>
-
-      <div className="robot-hero-overlay">
-        <RobotNav repoHref={repoHref} onDownloadClick={onDownloadClick} />
-
-        <div className="robot-face-wrap">
-          <RobotFace isLoved={isLoved} onTap={handleTap} />
-        </div>
-
-        <p className="robot-hero-hint">
-          {isLoved ? 'Aw, thanks!' : 'Move your mouse — the robot is watching'}
-        </p>
-      </div>
+    <section className="robot-hero" aria-label="TheGitDown's robot">
+      <RobotFace isLoved={isLoved} onTap={handleTap} trackPointer={trackPointer} />
+      <p className="robot-hero-hint">{hint}</p>
     </section>
   )
 }

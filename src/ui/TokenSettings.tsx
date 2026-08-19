@@ -49,14 +49,16 @@ export function TokenSettings({ credentials }: TokenSettingsProps) {
   }
 
   return (
-    <div className="token-settings" aria-label="GitHub token settings">
-      <h2 className="token-settings-heading">Optional GitHub token</h2>
+    <div className="token-settings" role="group" aria-labelledby="token-settings-heading">
+      <h2 id="token-settings-heading" className="token-settings-heading">
+        Optional GitHub token
+      </h2>
       <p className="token-settings-help">
         Stored only in this browser. Raises GitHub API rate limits for larger
-        trees — never sent to a GitDown server.
+        trees — TheGitDown has no server.
       </p>
 
-      <label className="token-settings-label" htmlFor="github-token">
+      <label className="visually-hidden" htmlFor="github-token">
         Personal access token
       </label>
       <input
