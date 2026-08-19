@@ -1,24 +1,222 @@
 :root {
-  font-family: system-ui, sans-serif;
-  color: #0f172a;
+  --bg: #0b0e0e;
+  --surface: #121717;
+  --surface-raised: #161b1b;
+  --border: #2a3535;
+  --line: rgb(120 160 155 / 0.28);
+  --ink: #f5f7f7;
+  --ink-secondary: #c8d0cf;
+  --muted: #8b9896;
+  --faint: #7a8a88;
+  --accent: #DA532C;
+  --focus-ring: #d4dcdb;
+  --radius-control: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+.options {
+  width: 100%;
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.options-label {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.options-wordmark {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.options-wordmark-accent {
+  color: var(--accent);
+}
+
+.options-frame {
+  position: relative;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.options-cross {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--line), var(--line)) center / 11px 1px no-repeat,
+    linear-gradient(var(--line), var(--line)) center / 1px 11px no-repeat;
+}
+
+.options-cross-tl {
+  top: -6px;
+  left: -6px;
+}
+
+.options-cross-tr {
+  top: -6px;
+  right: -6px;
+}
+
+.options-cross-bl {
+  bottom: -6px;
+  left: -6px;
+}
+
+.options-cross-br {
+  bottom: -6px;
+  right: -6px;
+}
+
+.options-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  max-width: 32rem;
+}
+
+.options-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.options-field-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.options-input,
+.options-save,
+.options-clear {
+  width: 100%;
+}
+
+.options-input {
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.options-input:focus-visible,
+.options-save:focus-visible,
+.options-clear:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.options-input:disabled,
+.options-save:disabled,
+.options-clear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.options-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.options-save,
+.options-clear {
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.options-save {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.options-save:hover:not(:disabled) {
   background: #fff;
+  border-color: #fff;
 }
 
-body {
+.options-clear {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-secondary);
+  font-weight: 500;
+}
+
+.options-clear:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--border) 60%, #6a8580 30%);
+  background: color-mix(in srgb, var(--surface-raised) 80%, #1a2222);
+}
+
+.options-status {
   margin: 0;
-}
-
-main {
-  padding: 1.5rem;
-  max-width: 40rem;
-}
-
-h1 {
-  margin: 0 0 0.5rem;
-  font-size: 1.5rem;
-}
-
-p {
-  margin: 0;
-  color: #475569;
+  min-height: 1.125rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--faint);
 }
