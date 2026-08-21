@@ -1,0 +1,44 @@
+{
+  "name": "the-git-down",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": ["packages/core", "packages/extension"],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "lint": "eslint .",
+    "ext:dev": "npm run dev -w gitdown",
+    "ext:build": "npm run build -w gitdown",
+    "ext:build:firefox": "npm run build:firefox -w gitdown",
+    "ext:zip": "npm run zip -w gitdown",
+    "ext:zip:firefox": "npm run zip:firefox -w gitdown"
+  },
+  "dependencies": {
+    "@gitdown/core": "*",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.18.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/file-saver": "^2.0.7",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "jsdom": "^26.1.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.39.1",
+    "vite": "^7.1.2",
+    "vitest": "^3.2.4"
+  }
+}

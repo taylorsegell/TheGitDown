@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GitDown store screenshot — context menu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: #0c0c0c;
+        --surface: #141310;
+        --surface-2: #1b1a15;
+        --fg-1: #ede7da;
+        --fg-2: #c9c2b2;
+        --fg-3: #8c8576;
+        --fg-4: #5b564b;
+        --border: #2a2823;
+        --line: rgb(168 156 136 / 0.3);
+        --grid: rgb(168 156 136 / 0.12);
+        --accent: #da532c;
+        --font-display: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'Space Mono', ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        color: var(--fg-1);
+        font-family: var(--font-display);
+        background: var(--background);
+      }
+      body {
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .stage {
+        width: 1280px;
+        height: 800px;
+        padding: 28px 32px;
+      }
+      .browser {
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--border);
+      }
+      .cross {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        z-index: 3;
+        pointer-events: none;
+        background:
+          linear-gradient(var(--line), var(--line)) center / 11px 1px no-repeat,
+          linear-gradient(var(--line), var(--line)) center / 1px 11px no-repeat;
+      }
+      .cross-tl { top: -6px; left: -6px; }
+      .cross-tr { top: -6px; right: -6px; }
+      .cross-bl { bottom: -6px; left: -6px; }
+      .cross-br { bottom: -6px; right: -6px; }
+      .tabs {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        height: 40px;
+        padding: 0 12px;
+        background: var(--background);
+        border-bottom: 1px solid var(--border);
+      }
+      .tab {
+        height: 28px;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-3);
+      }
+      .tab.is-active {
+        background: var(--surface);
+        color: var(--fg-1);
+        border: 1px solid var(--border);
+        border-bottom-color: var(--surface);
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 48px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .omnibox {
+        flex: 1;
+        height: 32px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        background: var(--background);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-2);
+      }
+      .ext {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        background: var(--background);
+      }
+      .ext img {
+        width: 20px;
+        height: 20px;
+        display: block;
+      }
+      .page {
+        flex: 1;
+        min-height: 0;
+        padding: 32px 40px;
+        background: var(--surface-2);
+      }
+      .crumbs {
+        margin: 0 0 18px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-3);
+      }
+      .folder {
+        margin: 0 0 22px;
+        font-size: 46px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.02;
+      }
+      .files {
+        position: relative;
+        width: min(640px, 100%);
+        border: 1px solid var(--border);
+        background: var(--background);
+      }
+      .file {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 12px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 18px;
+        color: var(--fg-2);
+      }
+      .file:first-child { border-top: 0; }
+      .file.is-hot {
+        color: var(--fg-1);
+        font-weight: 700;
+        outline: 1px solid var(--accent);
+        outline-offset: -1px;
+        background: rgba(218, 83, 44, 0.1);
+      }
+      .kind { color: var(--fg-4); }
+      .menu {
+        position: absolute;
+        top: 118px;
+        left: 280px;
+        z-index: 4;
+        width: 280px;
+        padding: 10px 0;
+        background: var(--background);
+        border: 1px solid var(--border);
+      }
+      .menu-item {
+        margin: 0;
+        padding: 10px 18px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-2);
+      }
+      .menu-item.is-action {
+        margin: 6px 8px 4px;
+        padding: 12px 14px;
+        color: #fff;
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        text-transform: uppercase;
+      }
+      .rule {
+        height: 1px;
+        margin: 8px 0;
+        background: var(--border);
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <section class="browser">
+        <span class="cross cross-tl"></span>
+        <span class="cross cross-tr"></span>
+        <span class="cross cross-bl"></span>
+        <span class="cross cross-br"></span>
+        <div class="tabs">
+          <div class="tab is-active">TheGitDown</div>
+          <div class="tab">gitdown.xyz</div>
+        </div>
+        <div class="toolbar">
+          <p class="omnibox">github.com/taylorsegell/TheGitDown</p>
+          <div class="ext" title="GitDown">
+            <img src="../public/logo.svg" alt="" width="20" height="20" />
+          </div>
+        </div>
+        <div class="page">
+          <p class="crumbs">taylorsegell / TheGitDown</p>
+          <h1 class="folder">TheGitDown</h1>
+          <div class="files">
+            <div class="file"><span class="kind">file</span><span>README.md</span></div>
+            <div class="file is-hot"><span class="kind">dir</span><span>images/</span></div>
+            <div class="file"><span class="kind">dir</span><span>packages/</span></div>
+            <div class="file"><span class="kind">dir</span><span>src/</span></div>
+            <aside class="menu">
+              <span class="cross cross-tl"></span>
+              <span class="cross cross-tr"></span>
+              <span class="cross cross-bl"></span>
+              <span class="cross cross-br"></span>
+              <p class="menu-item">Open</p>
+              <p class="menu-item">Copy link</p>
+              <hr class="rule" />
+              <p class="menu-item is-action">Download with GitDown</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

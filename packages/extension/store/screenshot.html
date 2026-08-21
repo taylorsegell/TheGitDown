@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GitDown store screenshot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: #0c0c0c;
+        --surface: #141310;
+        --surface-2: #1b1a15;
+        --fg-1: #ede7da;
+        --fg-2: #c9c2b2;
+        --fg-3: #8c8576;
+        --fg-4: #5b564b;
+        --border: #2a2823;
+        --line: rgb(168 156 136 / 0.3);
+        --grid: rgb(168 156 136 / 0.12);
+        --accent: #da532c;
+        --font-display: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'Space Mono', ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        color: var(--fg-1);
+        font-family: var(--font-display);
+        background: var(--background);
+      }
+      body {
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .stage {
+        width: 1280px;
+        height: 800px;
+        padding: 28px 32px;
+      }
+      .browser {
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
+        border: 1px solid var(--border);
+      }
+      .cross {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        z-index: 3;
+        pointer-events: none;
+        background:
+          linear-gradient(var(--line), var(--line)) center / 11px 1px no-repeat,
+          linear-gradient(var(--line), var(--line)) center / 1px 11px no-repeat;
+      }
+      .cross-tl { top: -6px; left: -6px; }
+      .cross-tr { top: -6px; right: -6px; }
+      .cross-bl { bottom: -6px; left: -6px; }
+      .cross-br { bottom: -6px; right: -6px; }
+      .tabs {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        height: 40px;
+        padding: 0 12px;
+        background: var(--background);
+        border-bottom: 1px solid var(--border);
+      }
+      .tab {
+        height: 28px;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-3);
+      }
+      .tab.is-active {
+        background: var(--surface);
+        color: var(--fg-1);
+        border: 1px solid var(--border);
+        border-bottom-color: var(--surface);
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 48px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .omnibox {
+        flex: 1;
+        height: 32px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        background: var(--background);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-2);
+      }
+      .ext {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--accent);
+        background: var(--background);
+      }
+      .ext img {
+        width: 20px;
+        height: 20px;
+        display: block;
+      }
+      .page {
+        flex: 1;
+        min-height: 0;
+        padding: 32px 40px;
+        background: var(--surface-2);
+      }
+      .crumbs {
+        margin: 0 0 18px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-3);
+      }
+      .folder {
+        margin: 0 0 22px;
+        font-size: 46px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.02;
+      }
+      .files {
+        width: min(640px, 100%);
+        border: 1px solid var(--border);
+        background: var(--background);
+      }
+      .file {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 12px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 18px;
+        color: var(--fg-2);
+      }
+      .file:first-child { border-top: 0; }
+      .kind { color: var(--fg-4); }
+      .popup {
+        position: absolute;
+        top: 96px;
+        right: 20px;
+        z-index: 4;
+        width: 360px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        background: var(--background);
+        border: 1px solid var(--border);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand img {
+        width: 36px;
+        height: 36px;
+        display: block;
+      }
+      .wordmark {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+      .wordmark span { color: var(--accent); }
+      .frame {
+        position: relative;
+        padding: 16px;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .label,
+      .repo,
+      .path,
+      .done,
+      .token,
+      .options,
+      .btn {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      .label {
+        margin: 0;
+        letter-spacing: 0.14em;
+        color: var(--fg-3);
+      }
+      .repo { margin: 0; }
+      .path {
+        margin: 4px 0 0;
+        color: var(--fg-3);
+      }
+      .btn {
+        min-height: 2.75rem;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #fff;
+        text-transform: uppercase;
+      }
+      .done {
+        margin: 0;
+        color: var(--fg-2);
+      }
+      .auth {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .auth-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .token {
+        margin: 0;
+        color: var(--fg-4);
+      }
+      .options {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--fg-2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <section class="browser">
+        <span class="cross cross-tl"></span>
+        <span class="cross cross-tr"></span>
+        <span class="cross cross-bl"></span>
+        <span class="cross cross-br"></span>
+        <div class="tabs">
+          <div class="tab is-active">TheGitDown</div>
+          <div class="tab">gitdown.xyz</div>
+        </div>
+        <div class="toolbar">
+          <p class="omnibox">github.com/taylorsegell/TheGitDown/tree/master/images</p>
+          <div class="ext" title="GitDown">
+            <img src="../public/logo.svg" alt="" width="20" height="20" />
+          </div>
+        </div>
+        <div class="page">
+          <p class="crumbs">taylorsegell / TheGitDown / images</p>
+          <h1 class="folder">images</h1>
+          <div class="files">
+            <div class="file"><span class="kind">file</span><span>codepen.svg</span></div>
+            <div class="file"><span class="kind">file</span><span>logo.svg</span></div>
+            <div class="file"><span class="kind">file</span><span>gitdown.png</span></div>
+          </div>
+        </div>
+        <aside class="popup">
+          <div class="brand">
+            <img src="../public/logo.svg" alt="" width="36" height="36" />
+            <p class="wordmark">The<span>GitDown</span></p>
+          </div>
+          <div class="frame">
+            <span class="cross cross-tl"></span>
+            <span class="cross cross-tr"></span>
+            <span class="cross cross-bl"></span>
+            <span class="cross cross-br"></span>
+            <p class="label">// download</p>
+            <div>
+              <p class="repo">taylorsegell/TheGitDown</p>
+              <p class="path">images</p>
+            </div>
+            <button class="btn" type="button">Download images.zip</button>
+            <p class="done">Saved images.zip</p>
+          </div>
+          <footer class="auth">
+            <p class="label">// auth</p>
+            <div class="auth-row">
+              <p class="token">No token saved</p>
+              <button class="options" type="button">Token settings</button>
+            </div>
+          </footer>
+        </aside>
+      </section>
+    </div>
+  </body>
+</html>

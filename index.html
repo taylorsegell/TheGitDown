@@ -1,50 +1,35 @@
-<!DOCTYPE html>
-<html ng-app="TheGitDown">
-
-<head>
-
-    <!-------------------------------- META -------------------------------->
-
-    <meta charset="utf-8" />
-    <meta name="keywords"
-        content="GitHub Directory Link, GitHub Directory, Github Link, GitHub Directory Download, GitHub, Download" />
-    <meta name="description" content="Create GitHub Directory Download Link" />
-    <meta name="author" content="Taylor Segell" />
-  
-    <title>The GitDown</title>
-    <link rel="icon" type="image/ico" href="images/GitDown.png">
-
-
-    <!-------------------------------- LINK -------------------------------->
-
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
-    <link href="lib/angular-toastr(2.0.0).min.css" rel="stylesheet" />
-
-    <link href="app/site.css" rel="stylesheet" />
-</head>
-
-<body>
-
-    <div ng-view class=""></div>
-
-
-    <!------------------------------- SCRIPT ------------------------------>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular-route.min.js"></script>
-    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
-        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
-        integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
-        crossorigin="anonymous"></script>
-    <script src="lib/angular-toastr(2.0.0).tpls.min.js"></script>
-    <script src="https://cdn.rawgit.com/Stuk/jszip/v3.0.0/dist/jszip.min.js"></script>
-    <script src="lib/filesaver.min.js"></script>
-
-    <script src="app/app.js"></script>
-    <script src="app/home/home.js"></script>
-    <script src="app/home/down-git.js"></script>
-</body>
-
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Paste a public GitHub link. Get the folder you want as a zip, or a link that does the same job."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="/favicon/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicon/site.webmanifest" />
+    <meta name="theme-color" content="#0C0C0C" />
+    <title>TheGitDown</title>
+  </head>
+  <body>
+    <!--
+      THESIS: Surgical extraction as a file-tree prune — the mechanism is the first viewport, not a slogan over a companion mascot.
+      OWN-WORLD: Warm near-black panels (#0C0C0C / #141310 / #1B1A15), beige ink, terracotta #DA532C. Quicksand display, Space Mono for labels, tree, and buttons. Square 1px-bordered plates with drafting-grid ground and corner registration marks.
+      STORY: Visitor sees one folder lifted from a repo, believes the zip happens in-browser, and pastes a GitHub URL.
+      FIRST VIEWPORT: 1100px bordered plate with drafting-grid ground and corner registration marks. Top bar gitdown_ + // surgical repo downloads. Left: headline “Grab the branch. Skip the forest.” and lede. Right: mono tree, assets/ pulsing, assets.zip dropping. Download lives in the plate below.
+      FORM: Tree Pruning (concept 1a), user-locked from design_handoff_gitdown_hero; seed 1a-tree-pruning.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
