@@ -2,7 +2,9 @@
 
 Client-side tool for downloading a public GitHub file or directory as a zip, or sharing a one-click download link. Live at [gitdown.xyz](https://gitdown.xyz).
 
-![See it in action](images/screenshot.png)
+[![Paste a GitHub link, download the folder](images/screenshot-hero.png)](https://gitdown.xyz)
+[![Download or create a share link](images/screenshot-download.png)](https://gitdown.xyz)
+[![Skip the paste — right-click any GitHub link](images/screenshot-extension.png)](https://chromewebstore.google.com/detail/gitdown/placeholder)
 
 ## Deep links
 
