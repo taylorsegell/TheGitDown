@@ -20,3 +20,4 @@ npm-debug.log*
 .vite
 coverage
 .brain/
+.impeccable/

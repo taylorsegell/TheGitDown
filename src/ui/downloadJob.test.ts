@@ -61,6 +61,15 @@ describe('mapDownloadErrorMessage', () => {
     expect(msg.toLowerCase()).toMatch(/token|personal access/)
   })
 
+  it('not_found mentions private repos and a token', () => {
+    const msg = mapDownloadErrorMessage({
+      kind: 'not_found',
+      message: '404: Not Found',
+    })
+    expect(msg.toLowerCase()).toMatch(/private/)
+    expect(msg.toLowerCase()).toMatch(/token/)
+  })
+
   it('passes through invalid_url message', () => {
     expect(
       mapDownloadErrorMessage({

@@ -31,6 +31,8 @@ type FileToFetch = {
   downloadUrl: string | null
 }
 
+const DIRECTORY_FETCH_CONCURRENCY = 6
+
 function isDownloadError(value: unknown): value is DownloadError {
   return (
     typeof value === 'object' &&
@@ -244,6 +246,54 @@ async function fetchBlob(
   }
 }
 
+async function* fetchDirectoryBlobs(
+  http: GitHubHttp,
+  files: FileToFetch[],
+  owner: string,
+  repo: string,
+  ref: string,
+): AsyncGenerator<{
+  index: number
+  file: FileToFetch
+  fetched: Awaited<ReturnType<typeof fetchBlob>>
+}> {
+  type Result = {
+    index: number
+    file: FileToFetch
+    fetched: Awaited<ReturnType<typeof fetchBlob>>
+  }
+
+  const active = new Map<number, Promise<Result>>()
+  let nextIndex = 0
+
+  const start = (index: number) => {
+    const file = files[index]!
+    active.set(
+      index,
+      fetchBlob(http, file, owner, repo, ref).then((fetched) => ({
+        index,
+        file,
+        fetched,
+      })),
+    )
+  }
+
+  while (nextIndex < files.length && active.size < DIRECTORY_FETCH_CONCURRENCY) {
+    start(nextIndex)
+    nextIndex += 1
+  }
+
+  while (active.size > 0) {
+    const result = await Promise.race(active.values())
+    active.delete(result.index)
+    if (nextIndex < files.length) {
+      start(nextIndex)
+      nextIndex += 1
+    }
+    yield result
+  }
+}
+
 /**
  * Deep download: parse → resolve ref → redirect (whole repo) or walk/zip path.
  * Yields typed DownloadEvent stream. UI concerns stay outside this module.
@@ -382,15 +432,20 @@ export async function* downloadGitHubPath(
     return
   }
 
-  const zipFiles: { path: string; data: ArrayBuffer }[] = []
+  const zipFiles: { path: string; data: ArrayBuffer }[] = new Array(files.length)
   const missingPaths: string[] = []
   let downloaded = 0
   const total = files.length
 
   yield { type: 'progress', downloaded: 0, total }
 
-  for (const file of files) {
-    const fetched = await fetchBlob(deps.http, file, owner, repo, ref)
+  for await (const { index, file, fetched } of fetchDirectoryBlobs(
+    deps.http,
+    files,
+    owner,
+    repo,
+    ref,
+  )) {
     if (!fetched.ok) {
       if (fetched.error.kind === 'rate_limited') {
         yield { type: 'fail', error: fetched.error }
@@ -400,10 +455,10 @@ export async function* downloadGitHubPath(
       continue
     }
     downloaded += 1
-    zipFiles.push({
+    zipFiles[index] = {
       path: zipEntryPath(rootDirectoryPrefix, file.relativePath),
       data: fetched.data,
-    })
+    }
     yield { type: 'progress', downloaded, total }
   }
 

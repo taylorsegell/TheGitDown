@@ -119,7 +119,7 @@ describe('createDownloadJob', () => {
     await waitUntil(job, (s) => s.status === 'done')
 
     expect(saveRemoteUrl).toHaveBeenCalledOnce()
-    expect(saveRemoteUrl).toHaveBeenCalledWith(ARCHIVE_URL)
+    expect(saveRemoteUrl).toHaveBeenCalledWith(ARCHIVE_URL, 'b-main.zip')
     expect(saveBlobZip).not.toHaveBeenCalled()
 
     const here = dirname(fileURLToPath(import.meta.url))

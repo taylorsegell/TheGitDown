@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GitDown promo tile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: #0c0c0c;
+        --surface: #141310;
+        --fg-1: #ede7da;
+        --fg-2: #c9c2b2;
+        --fg-3: #8c8576;
+        --border: #2a2823;
+        --line: rgb(168 156 136 / 0.3);
+        --grid: rgb(168 156 136 / 0.14);
+        --accent: #da532c;
+        --font-display: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'Space Mono', ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 440px;
+        height: 280px;
+        overflow: hidden;
+        color: var(--fg-1);
+        font-family: var(--font-display);
+        background: var(--background);
+      }
+      body {
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .tile {
+        position: relative;
+        width: 424px;
+        height: 264px;
+        margin: 8px;
+        padding: 22px 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: var(--surface);
+        border: 1px solid var(--border);
+      }
+      .cross {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        background:
+          linear-gradient(var(--line), var(--line)) center / 11px 1px no-repeat,
+          linear-gradient(var(--line), var(--line)) center / 1px 11px no-repeat;
+      }
+      .cross-tl { top: -6px; left: -6px; }
+      .cross-tr { top: -6px; right: -6px; }
+      .cross-bl { bottom: -6px; left: -6px; }
+      .cross-br { bottom: -6px; right: -6px; }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand img {
+        width: 36px;
+        height: 36px;
+        display: block;
+      }
+      .wordmark {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      .cursor { color: var(--accent); }
+      .comment {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        letter-spacing: 0.14em;
+        color: var(--fg-3);
+      }
+      .headline {
+        margin: 0;
+        font-size: 46px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.02;
+      }
+      .foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .zip {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        letter-spacing: 0.04em;
+        color: var(--fg-1);
+        border: 1px solid var(--accent);
+        padding: 5px 12px;
+        background: rgba(218, 83, 44, 0.08);
+      }
+      .line {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.4;
+        color: var(--fg-2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tile">
+      <span class="cross cross-tl"></span>
+      <span class="cross cross-tr"></span>
+      <span class="cross cross-bl"></span>
+      <span class="cross cross-br"></span>
+      <div class="top">
+        <div class="brand">
+          <img src="../public/logo.svg" alt="" width="36" height="36" />
+          <p class="wordmark">gitdown<span class="cursor">_</span></p>
+        </div>
+        <p class="comment">// zip</p>
+      </div>
+      <h1 class="headline">Grab the branch.<br />Skip the forest.</h1>
+      <div class="foot">
+        <p class="line">From the tab you’re on.</p>
+        <span class="zip">images.zip</span>
+      </div>
+    </div>
+  </body>
+</html>

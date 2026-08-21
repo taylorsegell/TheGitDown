@@ -1,3 +1,9 @@
+import {
+  hasSavePort,
+  saveBlobViaPort,
+} from './savePort'
+import { withZipExtension } from './zipFileName'
+
 /** Options passed to `browser.downloads.download` / `chrome.downloads.download`. */
 export type ChromeDownloadOptions = {
   url: string
@@ -8,26 +14,31 @@ export type ChromeDownloadOptions = {
 
 export type DownloadsApi = {
   download: (opts: ChromeDownloadOptions) => Promise<number> | void
+  onDeterminingFilename?: {
+    addListener: (
+      listener: (
+        item: { url: string },
+        suggest: (suggestion: {
+          filename: string
+          conflictAction: 'uniquify'
+        }) => void,
+      ) => void,
+    ) => void
+  }
 }
 
 export type DownloadBlobZipDeps = {
   downloads: DownloadsApi
   createObjectURL?: (b: Blob) => string
   revokeObjectURL?: (u: string) => void
+  blobToDataUrl?: (b: Blob) => Promise<string>
+  saveViaPort?: (blob: Blob, fileName: string) => Promise<{ id: number }>
 }
 
 export type DownloadRemoteUrlDeps = {
   downloads: DownloadsApi
 }
 
-function withZipExtension(fileName: string): string {
-  return fileName.toLowerCase().endsWith('.zip') ? fileName : `${fileName}.zip`
-}
-
-/**
- * WXT / webextension-polyfill expose `browser`; Chrome also has `chrome`.
- * Prefer `browser` so Firefox MV3 gets the same promise API.
- */
 function resolveDownloads(deps?: { downloads: DownloadsApi }): DownloadsApi {
   if (deps?.downloads) {
     return deps.downloads
@@ -54,34 +65,129 @@ async function invokeDownload(
   return id
 }
 
+const fileNamesByUrl = new Map<string, string>()
+const filenameListeners = new WeakSet<DownloadsApi>()
+
+function suggestRememberedFileName(downloads: DownloadsApi): void {
+  if (!downloads.onDeterminingFilename || filenameListeners.has(downloads)) {
+    return
+  }
+  filenameListeners.add(downloads)
+  downloads.onDeterminingFilename.addListener((item, suggest) => {
+    const filename = fileNamesByUrl.get(item.url)
+    if (!filename) {
+      return
+    }
+    fileNamesByUrl.delete(item.url)
+    suggest({ filename, conflictAction: 'uniquify' })
+  })
+}
+
+function rememberFileName(
+  downloads: DownloadsApi,
+  url: string,
+  filename: string,
+): void {
+  suggestRememberedFileName(downloads)
+  if (!downloads.onDeterminingFilename) {
+    return
+  }
+  fileNamesByUrl.set(url, filename)
+  setTimeout(() => {
+    fileNamesByUrl.delete(url)
+  }, 30_000)
+}
+
+function canCreateObjectUrl(): boolean {
+  return typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+}
+
+/** MV3 service workers do not implement `URL.createObjectURL`. */
+export async function blobToDataUrl(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer()
+  const bytes = new Uint8Array(buffer)
+  const chunkSize = 0x8000
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize))
+  }
+  const mime = blob.type || 'application/zip'
+  return `data:${mime};base64,${btoa(binary)}`
+}
+
+async function defaultSaveViaPort(
+  blob: Blob,
+  fileName: string,
+): Promise<{ id: number }> {
+  if (!hasSavePort()) {
+    throw new Error('no popup save port connected')
+  }
+
+  const id = await saveBlobViaPort(blob, fileName)
+  return { id }
+}
+
+async function blobToDownloadUrl(
+  blob: Blob,
+  deps?: DownloadBlobZipDeps,
+): Promise<{ url: string; revoke?: (u: string) => void }> {
+  if (deps?.createObjectURL) {
+    const revoke = deps.revokeObjectURL ?? (() => {})
+    return { url: deps.createObjectURL(blob), revoke }
+  }
+  if (deps?.blobToDataUrl) {
+    return { url: await deps.blobToDataUrl(blob) }
+  }
+  if (canCreateObjectUrl()) {
+    return {
+      url: URL.createObjectURL(blob),
+      revoke: (u) => URL.revokeObjectURL(u),
+    }
+  }
+  return { url: await blobToDataUrl(blob) }
+}
+
 /**
  * Save a Blob via `downloads.download`. Appends `.zip` when `fileName` lacks it.
- * MV3-safe: create object URL, start the download, revoke (best-effort).
+ *
+ * Service workers cannot create blob URLs, and Chrome ignores `filename` on
+ * `data:` URLs. Popup-initiated jobs save through the confirmed popup port so
+ * the zip keeps the folder name. Context-menu jobs retain the data-URL fallback.
  */
 export async function downloadBlobZip(
   blob: Blob,
   fileName: string,
   deps?: DownloadBlobZipDeps,
 ): Promise<{ id: number }> {
-  const downloads = resolveDownloads(deps)
-  const createObjectURL =
-    deps?.createObjectURL ?? ((b: Blob) => URL.createObjectURL(b))
-  const revokeObjectURL =
-    deps?.revokeObjectURL ?? ((u: string) => URL.revokeObjectURL(u))
+  const filename = withZipExtension(fileName)
+  const useDirectDownloadSeam = Boolean(deps?.createObjectURL)
 
-  const url = createObjectURL(blob)
+  if (!useDirectDownloadSeam) {
+    const saveViaPort = deps?.saveViaPort ?? defaultSaveViaPort
+    try {
+      return await saveViaPort(blob, filename)
+    } catch {
+      // Fall back so a download still completes if no host connected.
+    }
+  }
+
+  const downloads = resolveDownloads(deps)
+  const { url, revoke } = await blobToDownloadUrl(blob, deps)
   try {
+    rememberFileName(downloads, url, filename)
     const id = await invokeDownload(downloads, {
       url,
-      filename: withZipExtension(fileName),
+      filename,
       conflictAction: 'uniquify',
     })
     return { id }
   } finally {
-    try {
-      revokeObjectURL(url)
-    } catch {
-      // best-effort: download may already have taken the URL
+    if (revoke) {
+      try {
+        revoke(url)
+      } catch {
+        // best-effort
+      }
     }
   }
 }

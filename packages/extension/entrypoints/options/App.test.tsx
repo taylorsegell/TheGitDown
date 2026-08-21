@@ -1,4 +1,7 @@
 /** @vitest-environment jsdom */
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
@@ -93,5 +96,19 @@ describe('options App', () => {
 
     expect(saved).toHaveBeenCalledWith({ type: 'AUTH_GET_STATUS' })
     expect(await screen.findByText('Token saved')).toBeTruthy()
+  })
+
+  it('does not load Google Fonts from a CDN', () => {
+    const html = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), 'index.html'),
+      'utf8',
+    )
+    expect(html).not.toContain('fonts.googleapis.com')
+  })
+
+  it('links Privacy policy to gitdown.xyz/privacy.html', async () => {
+    await renderOptions(mockSendExtMessage())
+    const link = screen.getByRole('link', { name: /Privacy policy/ })
+    expect(link.getAttribute('href')).toBe('https://gitdown.xyz/privacy.html')
   })
 })

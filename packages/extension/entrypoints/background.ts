@@ -1,3 +1,4 @@
+import { bindSavePort, SAVE_PORT_NAME } from '../lib/savePort'
 import { registerContextMenus } from '../lib/menu'
 import {
   addJobStateListener,
@@ -6,6 +7,12 @@ import {
 } from '../lib/messages'
 
 export default defineBackground(() => {
+  browser.runtime.onConnect.addListener((port) => {
+    if (port.name === SAVE_PORT_NAME) {
+      bindSavePort(port)
+    }
+  })
+
   registerContextMenus()
 
   addJobStateListener((state) => {
@@ -25,4 +32,3 @@ export default defineBackground(() => {
     return true
   })
 })
-

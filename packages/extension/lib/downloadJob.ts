@@ -23,7 +23,20 @@ const INVALID_URL_ERROR: DownloadError = {
   message: 'Invalid GitHub URL',
 }
 
+/** GitHub archive URLs are `/owner/repo/archive/{ref}.zip` → `{repo}-{ref}.zip`. */
 function archiveFileName(url: string): string {
+  try {
+    const parsed = new URL(url)
+    const parts = parsed.pathname.split('/').filter((part) => part.length > 0)
+    const archiveIdx = parts.indexOf('archive')
+    if (archiveIdx >= 2 && parts[archiveIdx + 1]) {
+      const repo = parts[archiveIdx - 1] ?? 'repo'
+      const ref = parts[archiveIdx + 1]!.replace(/\.zip$/i, '')
+      return `${repo}-${ref}.zip`
+    }
+  } catch {
+    // fall through
+  }
   const segment = url.split('/').filter((part) => part.length > 0).at(-1)
   return segment ?? url
 }
@@ -94,14 +107,15 @@ export function createDownloadJob(deps: {
           setState({ status: 'done', url, fileName: event.fileName })
           return
         } else if (event.type === 'redirect') {
-          await deps.saveRemoteUrl(event.url)
+          const fileName = archiveFileName(event.url)
+          await deps.saveRemoteUrl(event.url, fileName)
           if (thisRun !== runId) {
             return
           }
           setState({
             status: 'done',
             url,
-            fileName: archiveFileName(event.url),
+            fileName,
           })
           return
         } else if (event.type === 'fail') {

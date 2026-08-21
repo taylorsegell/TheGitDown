@@ -4,6 +4,7 @@ import {
   GITDOWN_LINK_MENU_ID,
   GITDOWN_PAGE_MENU_ID,
   registerContextMenus,
+  resetContextMenusForTests,
   startDownload,
   type ContextMenusApi,
   type MenuClickInfo,
@@ -13,6 +14,7 @@ import { resetExtensionJobsForTests, setProductionDownloadJobForTests } from './
 
 function mockContextMenus() {
   const create = vi.fn()
+  const removeAll = vi.fn(async () => {})
   const listeners: Array<(info: MenuClickInfo, tab?: MenuTab) => void> = []
   const addListener = vi.fn(
     (callback: (info: MenuClickInfo, tab?: MenuTab) => void) => {
@@ -22,12 +24,14 @@ function mockContextMenus() {
 
   const contextMenus: ContextMenusApi = {
     create,
+    removeAll,
     onClicked: { addListener },
   }
 
   return {
     contextMenus,
     create,
+    removeAll,
     click(info: MenuClickInfo, tab?: MenuTab) {
       for (const listener of listeners) {
         listener(info, tab)
@@ -54,9 +58,35 @@ function createCallById(
 }
 
 describe('registerContextMenus', () => {
-  it('creates a page item titled Download with GitDown', () => {
+  afterEach(() => {
+    resetContextMenusForTests()
+  })
+
+  it('clears existing items before creating menus', async () => {
+    const { contextMenus, removeAll, create } = mockContextMenus()
+    registerContextMenus({ contextMenus, startDownload: vi.fn() })
+    await vi.waitFor(() => {
+      expect(removeAll).toHaveBeenCalledOnce()
+      expect(create).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  it('can register twice without duplicate create errors', async () => {
+    const { contextMenus, removeAll, create } = mockContextMenus()
+    registerContextMenus({ contextMenus, startDownload: vi.fn() })
+    registerContextMenus({ contextMenus, startDownload: vi.fn() })
+    await vi.waitFor(() => {
+      expect(removeAll).toHaveBeenCalledTimes(2)
+      expect(create).toHaveBeenCalledTimes(4)
+    })
+  })
+
+  it('creates a page item titled Download with GitDown', async () => {
     const { contextMenus, create } = mockContextMenus()
     registerContextMenus({ contextMenus, startDownload: vi.fn() })
+    await vi.waitFor(() => {
+      expect(create).toHaveBeenCalledTimes(2)
+    })
 
     const pageItem = createCallById(create, 'gitdown-download-page')
     expect(pageItem.id).toBe('gitdown-download-page')
@@ -68,9 +98,12 @@ describe('registerContextMenus', () => {
     ])
   })
 
-  it('creates a link item with github targetUrlPatterns', () => {
+  it('creates a link item with github targetUrlPatterns', async () => {
     const { contextMenus, create } = mockContextMenus()
     registerContextMenus({ contextMenus, startDownload: vi.fn() })
+    await vi.waitFor(() => {
+      expect(create).toHaveBeenCalledTimes(2)
+    })
 
     const linkItem = createCallById(create, 'gitdown-download-link')
     expect(linkItem.contexts).toContain('link')

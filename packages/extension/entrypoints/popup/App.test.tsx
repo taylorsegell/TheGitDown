@@ -65,7 +65,10 @@ function mockSendExtMessage(options?: {
   }) as SendExtMessage
 }
 
-async function renderPopup(sendMessage: SendExtMessage) {
+async function renderPopup(
+  sendMessage: SendExtMessage,
+  waitForSavePort?: () => Promise<void>,
+) {
   const openOptionsPage = vi.fn()
   const user = userEvent.setup()
   const view = render(
@@ -73,6 +76,7 @@ async function renderPopup(sendMessage: SendExtMessage) {
       sendMessage={sendMessage}
       openOptionsPage={openOptionsPage}
       pollMs={60_000}
+      waitForSavePort={waitForSavePort}
     />,
   )
   return { ...view, openOptionsPage, user }
@@ -97,7 +101,9 @@ describe('popup App', () => {
 
     expect(await screen.findByText('taylorsegell/TheGitDown')).toBeTruthy()
     expect(screen.getByText('images')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Download' })).toBeEnabled()
+    expect(
+      screen.getByRole('button', { name: 'Download images.zip' }),
+    ).toBeEnabled()
   })
 
   it('shows running progress as downloaded / total', async () => {
@@ -116,6 +122,20 @@ describe('popup App', () => {
     expect(progress.textContent).toMatch(/2\s*\/\s*5/)
     expect(progress.textContent).toContain('2')
     expect(progress.textContent).toContain('5')
+  })
+
+  it('shows Saved images.zip when the job is done', async () => {
+    const sendExtMessage = mockSendExtMessage({
+      detection: imagesDir,
+      state: {
+        status: 'done',
+        url: IMAGES_URL,
+        fileName: 'images',
+      },
+    })
+    await renderPopup(sendExtMessage)
+
+    expect(await screen.findByText('Saved images.zip')).toBeTruthy()
   })
 
   it('maps a rate_limited job failure with mapDownloadErrorMessage', async () => {
@@ -140,9 +160,37 @@ describe('popup App', () => {
     const sendExtMessage = mockSendExtMessage({ detection: imagesDir })
     const { user } = await renderPopup(sendExtMessage)
 
-    await screen.findByRole('button', { name: 'Download' })
-    await user.click(screen.getByRole('button', { name: 'Download' }))
+    await screen.findByRole('button', { name: 'Download images.zip' })
+    await user.click(screen.getByRole('button', { name: 'Download images.zip' }))
 
+    await waitFor(() => {
+      expect(sendExtMessage).toHaveBeenCalledWith({
+        type: 'START_DOWNLOAD',
+        url: IMAGES_URL,
+      })
+    })
+  })
+
+  it('waits for the popup save bridge before starting a download', async () => {
+    const sendExtMessage = mockSendExtMessage({ detection: imagesDir })
+    let releaseSavePort: (() => void) | undefined
+    const waitForSavePort = vi.fn(
+      () => new Promise<void>((resolve) => {
+        releaseSavePort = resolve
+      }),
+    )
+    const { user } = await renderPopup(sendExtMessage, waitForSavePort)
+
+    await screen.findByRole('button', { name: 'Download images.zip' })
+    await user.click(screen.getByRole('button', { name: 'Download images.zip' }))
+
+    expect(waitForSavePort).toHaveBeenCalledOnce()
+    expect(sendExtMessage).not.toHaveBeenCalledWith({
+      type: 'START_DOWNLOAD',
+      url: IMAGES_URL,
+    })
+
+    releaseSavePort?.()
     await waitFor(() => {
       expect(sendExtMessage).toHaveBeenCalledWith({
         type: 'START_DOWNLOAD',
@@ -188,5 +236,14 @@ describe('popup App', () => {
     expect(readFileSync(join(dir, 'App.tsx'), 'utf8')).not.toContain(
       'download' + 'GitHubPath',
     )
+  })
+
+  it('does not load Google Fonts from a CDN', () => {
+    const dir = dirname(fileURLToPath(import.meta.url))
+    const html = readFileSync(join(dir, 'index.html'), 'utf8')
+    const main = readFileSync(join(dir, 'main.tsx'), 'utf8')
+    expect(html).not.toContain('fonts.googleapis.com')
+    expect(html).not.toContain('fonts.gstatic.com')
+    expect(main).toContain('../../lib/fonts.css')
   })
 })

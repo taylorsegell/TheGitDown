@@ -363,6 +363,43 @@ describe('downloadGitHubPath', () => {
     })
   })
 
+  it('fetches files in a small directory concurrently', async () => {
+    const getJson = vi.fn(async () => ({
+      status: 200,
+      headers: new Headers(),
+      data: ['one.txt', 'two.txt', 'three.txt'].map((name) => ({
+        type: 'file',
+        name,
+        path: `pkg/${name}`,
+        download_url: `https://raw.githubusercontent.com/acme/widgets/main/pkg/${name}`,
+      })),
+    }))
+    const resolvers: Array<() => void> = []
+    const getArrayBuffer = vi.fn(
+      () => new Promise<{ status: number; headers: Headers; data: ArrayBuffer }>((resolve) => {
+        resolvers.push(() => {
+          resolve({ status: 200, headers: new Headers(), data: textBuffer('ok') })
+        })
+      }),
+    )
+    const iterator = downloadGitHubPath(
+      { url: 'https://github.com/acme/widgets/tree/main/pkg' },
+      { http: createHttp({ getJson, getArrayBuffer }) },
+    )
+
+    await iterator.next() // initial 0 / 3 progress event
+    const nextEvent = iterator.next()
+    await vi.waitFor(() => {
+      expect(getArrayBuffer).toHaveBeenCalledTimes(3)
+    })
+
+    for (const resolve of resolvers) {
+      resolve()
+    }
+    await nextEvent
+    await collectEvents(iterator)
+  })
+
   it('large-file fallback: Contents not_found → raw.githubusercontent.com once', async () => {
     const getJson = vi.fn(async () => {
       throw { kind: 'not_found', message: 'Not Found' }

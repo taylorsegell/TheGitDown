@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GitDown marquee promo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: #0c0c0c;
+        --surface: #141310;
+        --surface-2: #1b1a15;
+        --fg-1: #ede7da;
+        --fg-2: #c9c2b2;
+        --fg-3: #8c8576;
+        --fg-4: #5b564b;
+        --border: #2a2823;
+        --line: rgb(168 156 136 / 0.3);
+        --grid: rgb(168 156 136 / 0.14);
+        --accent: #da532c;
+        --font-display: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'Space Mono', ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1400px;
+        height: 560px;
+        overflow: hidden;
+        color: var(--fg-1);
+        font-family: var(--font-display);
+        background: var(--background);
+      }
+      body {
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      .marquee {
+        position: relative;
+        width: 1376px;
+        height: 536px;
+        margin: 12px;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        background: var(--surface);
+        border: 1px solid var(--border);
+      }
+      .cross {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        background:
+          linear-gradient(var(--line), var(--line)) center / 11px 1px no-repeat,
+          linear-gradient(var(--line), var(--line)) center / 1px 11px no-repeat;
+      }
+      .cross-tl { top: -6px; left: -6px; }
+      .cross-tr { top: -6px; right: -6px; }
+      .cross-bl { bottom: -6px; left: -6px; }
+      .cross-br { bottom: -6px; right: -6px; }
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 40px;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand img {
+        width: 36px;
+        height: 36px;
+        display: block;
+      }
+      .wordmark {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      .cursor { color: var(--accent); }
+      .comment {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        color: var(--fg-3);
+      }
+      .body {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        min-height: 0;
+      }
+      .copy {
+        padding: 48px 48px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 28px;
+      }
+      .headline {
+        margin: 0;
+        font-size: 46px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.02;
+      }
+      .zip {
+        width: max-content;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        color: var(--fg-1);
+        border: 1px solid var(--accent);
+        padding: 5px 12px;
+        background: rgba(218, 83, 44, 0.08);
+      }
+      .visual {
+        display: grid;
+        place-items: center;
+        padding: 32px 48px;
+        background: var(--surface-2);
+        border-left: 1px solid var(--border);
+      }
+      .tree {
+        font-family: var(--font-mono);
+        font-size: 18px;
+        width: max-content;
+      }
+      .root {
+        margin: 0 0 14px;
+        color: var(--fg-2);
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        padding: 6px 0;
+        color: var(--fg-3);
+        opacity: 0.42;
+      }
+      .prefix { color: var(--fg-4); }
+      .target {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        width: max-content;
+        margin: 6px -12px;
+        padding: 8px 12px;
+        border: 1px solid var(--accent);
+        background: rgba(218, 83, 44, 0.1);
+        color: var(--fg-1);
+        font-weight: 700;
+        box-shadow: 0 0 0 6px rgba(218, 83, 44, 0.16);
+      }
+      .target .prefix { color: var(--accent); }
+      .drop {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 18px;
+      }
+      .drop-arrow { color: var(--fg-4); }
+    </style>
+  </head>
+  <body>
+    <div class="marquee">
+      <span class="cross cross-tl"></span>
+      <span class="cross cross-tr"></span>
+      <span class="cross cross-bl"></span>
+      <span class="cross cross-br"></span>
+      <div class="bar">
+        <div class="brand">
+          <img src="../public/logo.svg" alt="" width="36" height="36" />
+          <p class="wordmark">gitdown<span class="cursor">_</span></p>
+        </div>
+        <p class="comment">// from the tab you’re on</p>
+      </div>
+      <div class="body">
+        <div class="copy">
+          <h1 class="headline">Grab the branch.<br />Skip the forest.</h1>
+          <span class="zip">images.zip</span>
+        </div>
+        <div class="visual">
+          <div class="tree">
+            <p class="root">TheGitDown/</p>
+            <div class="row"><span class="prefix">|--</span><span>src/</span></div>
+            <div class="row"><span class="prefix">|--</span><span>packages/</span></div>
+            <div class="target"><span class="prefix">|--</span><span>images/</span></div>
+            <div class="row"><span class="prefix">`--</span><span>README.md</span></div>
+            <div class="drop">
+              <span class="drop-arrow">↓</span>
+              <span class="zip">images.zip</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

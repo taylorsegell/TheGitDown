@@ -43,11 +43,13 @@ This repo is an npm workspace. Shared download logic lives in `packages/core` (`
 npm run ext:dev            # WXT extension dev (`npm run dev -w gitdown`)
 npm run ext:build          # Chrome MV3 (`npm run build -w gitdown`) → packages/extension/.output/chrome-mv3
 npm run ext:build:firefox  # Firefox MV3 (`npm run build:firefox -w gitdown`) → packages/extension/.output/firefox-mv3
+npm run ext:zip            # Chrome Web Store zip
+npm run ext:zip:firefox    # Firefox AMO zip
 ```
 
 ## Companion extension
 
-On a GitHub file, folder, or repo tab, the toolbar popup can zip the current path. Right-click a github.com link (on any site) for **Download with GitDown**. Short load notes also live in [packages/extension/README.md](packages/extension/README.md).
+On a GitHub file, folder, or repo tab, the toolbar popup can zip the current path. Right-click a github.com link (on any site) for **Download with GitDown**. Listing copy, screenshots, and reviewer notes: [packages/extension/STORE.md](packages/extension/STORE.md). Privacy: [https://gitdown.xyz/privacy.html](https://gitdown.xyz/privacy.html) (also `#/privacy`). Short load notes also live in [packages/extension/README.md](packages/extension/README.md).
 
 ### Load unpacked (Chrome)
 

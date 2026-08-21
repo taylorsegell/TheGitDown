@@ -31,3 +31,15 @@ npm run ext:build:firefox  # Firefox MV3 (`npm run build:firefox -w gitdown`)
 ## Token
 
 Optional PAT on the Options page is stored in `chrome.storage.local`. It is separate from gitdown.xyz `localStorage`. There is no TheGitDown backend for the token.
+
+Privacy policy: https://gitdown.xyz/privacy.html
+
+## Store listing
+
+Paste-ready Chrome Web Store / AMO copy, permission justifications, and asset paths: [STORE.md](./STORE.md).
+
+```bash
+npm run zip            # from packages/extension, or `npm run ext:zip` at repo root
+npm run zip:firefox
+```
+

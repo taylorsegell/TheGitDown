@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   createGitHubHttp,
   createLocalStorageCredentialStore,
   type CredentialStore,
 } from '@gitdown/core'
+import { ChromeExtensionCta } from '../ui/ChromeExtensionCta'
 import { createDownloadJob, paramsFromQuery } from '../ui/downloadJob'
 import { GridPattern } from '../ui/GridPattern'
-import { RobotHero } from '../ui/RobotHero'
+import { HeroTreePruning } from '../ui/HeroTreePruning'
+import { PlateMarks } from '../ui/PlateMarks'
 import { saveBlob } from '../ui/saveBlob'
 import { TokenSettings } from '../ui/TokenSettings'
 
@@ -85,7 +87,7 @@ export function HomePage() {
 
     setSearchParams(next, { replace: true })
 
-    // If hash query already matches, the effect will not re-run — start here.
+    // If hash query already matches, the effect will not re-run. Start here.
     if (alreadySynced) {
       void downloadJob.start(
         paramsFromQuery(githubUrl, fileNameFromQuery, rootDirectoryFromQuery),
@@ -112,19 +114,7 @@ export function HomePage() {
       <button type="button" className="home-skip" onClick={scrollToDownload}>
         Skip to download form
       </button>
-      <header className="home-hero">
-        <p className="home-cell-label">[ Download ]</p>
-        <h1 className="home-wordmark">
-          <span className="home-wordmark-primary">The</span>
-          <span className="home-wordmark-accent">GitDown</span>
-        </h1>
-        <p className="home-tagline">
-          Paste a public GitHub file or directory URL. Download a zip, or create
-          a shareable link — no backend, runs in your browser.
-        </p>
-        <p className="home-hero-meta">gitdown.xyz — MIT licensed, open source</p>
-        <RobotHero />
-      </header>
+      <HeroTreePruning />
 
       <div
         id="download"
@@ -133,13 +123,10 @@ export function HomePage() {
         aria-label="Download workspace"
         aria-busy={isProcessing}
       >
-        <span className="home-cross home-cross-tl" aria-hidden="true" />
-        <span className="home-cross home-cross-tr" aria-hidden="true" />
-        <span className="home-cross home-cross-bl" aria-hidden="true" />
-        <span className="home-cross home-cross-br" aria-hidden="true" />
-
+        <PlateMarks />
         <section className="home-cell home-cell-task" aria-label="Download controls">
           <div className="home-cell-inner">
+            <p className="m-comment">download</p>
             <div className="home-controls">
               <div className="home-field">
                 <div className="home-field-meta">
@@ -229,9 +216,9 @@ export function HomePage() {
 
         <details className="home-cell home-cell-auth">
           <summary className="home-auth-summary">
-            <span className="home-cell-label">[ Auth ]</span>
+            <span className="m-comment">auth</span>
             <span className="home-auth-summary-title">Optional GitHub token</span>
-            <span className="home-auth-summary-hint">Rate limits</span>
+            <span className="home-auth-summary-hint">For bigger trees</span>
             <span className="home-auth-disclosure" aria-hidden="true" />
           </summary>
           <div className="home-cell-inner home-auth-body">
@@ -240,8 +227,10 @@ export function HomePage() {
         </details>
       </div>
 
+      <ChromeExtensionCta />
+
       <footer className="home-footer">
-        <p className="home-cell-label">[ Open Source ]</p>
+        <p className="m-comment">open source</p>
         <div className="home-footer-row">
           <nav className="home-footer-links" aria-label="Credits">
             <a
@@ -322,6 +311,8 @@ export function HomePage() {
               Taylor Segell
               <span className="visually-hidden"> (opens in a new tab)</span>
             </a>
+            <span aria-hidden="true"> · </span>
+            <Link to="/privacy">Privacy</Link>
           </p>
         </div>
       </footer>

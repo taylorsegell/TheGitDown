@@ -83,11 +83,20 @@ export default function App({
 
   return (
     <main className="options">
-      <header>
-        <p className="options-label">[ Auth ]</p>
-        <h1 className="options-wordmark">
-          The<span className="options-wordmark-accent">GitDown</span>
-        </h1>
+      <header className="options-brand">
+        <img
+          className="options-logo"
+          src="/logo.svg"
+          alt=""
+          width={40}
+          height={40}
+        />
+        <div>
+          <p className="options-label">[ Auth ]</p>
+          <h1 className="options-wordmark">
+            The<span className="options-wordmark-accent">GitDown</span>
+          </h1>
+        </div>
       </header>
 
       <section className="options-frame" aria-label="GitHub token">
@@ -140,6 +149,17 @@ export default function App({
 
         <p className="options-status" aria-live="polite">
           {ready ? (hasToken ? 'Token saved' : 'No token saved') : null}
+        </p>
+
+        <p className="options-privacy">
+          <a
+            href="https://gitdown.xyz/privacy.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Privacy policy
+            <span className="visually-hidden"> (opens in a new tab)</span>
+          </a>
         </p>
       </section>
     </main>

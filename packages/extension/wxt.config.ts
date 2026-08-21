@@ -5,11 +5,34 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   // Firefox defaults to MV2; force MV3 so `wxt build -b firefox` emits firefox-mv3.
   manifestVersion: 3,
-  manifest: {
+  manifest: ({ browser }) => ({
     name: 'GitDown',
     description:
       'Download a GitHub file or folder as a zip from the current tab.',
-    permissions: ['storage', 'downloads', 'contextMenus', 'activeTab'],
+    icons: {
+      16: '/icon-16.png',
+      32: '/icon-32.png',
+      48: '/icon-48.png',
+      96: '/icon-96.png',
+      128: '/icon-128.png',
+    },
+    action: {
+      default_icon: {
+        16: '/icon-16.png',
+        32: '/icon-32.png',
+        48: '/icon-48.png',
+        96: '/icon-96.png',
+        128: '/icon-128.png',
+      },
+    },
+    permissions: [
+      'storage',
+      'downloads',
+      'contextMenus',
+      'activeTab',
+      ...(browser === 'firefox' ? [] : ['offscreen']),
+    ],
+    homepage_url: 'https://gitdown.xyz',
     host_permissions: [
       'https://api.github.com/*',
       'https://raw.githubusercontent.com/*',
@@ -24,5 +47,5 @@ export default defineConfig({
         },
       },
     },
-  },
+  }),
 });

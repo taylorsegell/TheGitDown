@@ -54,8 +54,8 @@ export function TokenSettings({ credentials }: TokenSettingsProps) {
         Optional GitHub token
       </h2>
       <p className="token-settings-help">
-        Stored only in this browser. Raises GitHub API rate limits for larger
-        trees — TheGitDown has no server.
+        Stays in this browser. Raises GitHub's rate limits when the tree gets
+        big. TheGitDown has no server.
       </p>
 
       <label className="visually-hidden" htmlFor="github-token">

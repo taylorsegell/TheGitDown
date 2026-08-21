@@ -32,6 +32,8 @@ export type ContextMenusCreateProperties = {
 
 export type ContextMenusApi = {
   create: (createProperties: ContextMenusCreateProperties) => unknown
+  remove?: (menuItemId: string) => unknown | Promise<unknown>
+  removeAll?: () => unknown | Promise<unknown>
   onClicked: {
     addListener: (
       callback: (info: MenuClickInfo, tab?: MenuTab) => void,
@@ -75,11 +77,23 @@ export function handleContextMenuClick(
   void download(detection.url)
 }
 
-export function registerContextMenus(
-  deps: RegisterContextMenusDeps = {},
-): void {
-  const contextMenus = deps.contextMenus ?? browser.contextMenus
-  const download = deps.startDownload ?? startDownload
+let productionClickListenerBound = false
+
+async function installContextMenuItems(
+  contextMenus: ContextMenusApi,
+): Promise<void> {
+  if (contextMenus.removeAll) {
+    await Promise.resolve(contextMenus.removeAll())
+  } else {
+    await Promise.all([
+      contextMenus.remove?.(GITDOWN_PAGE_MENU_ID),
+      contextMenus.remove?.(GITDOWN_LINK_MENU_ID),
+    ].map((result) =>
+      Promise.resolve(result).catch(() => {
+        // item may not exist yet
+      }),
+    ))
+  }
 
   contextMenus.create({
     id: GITDOWN_PAGE_MENU_ID,
@@ -94,8 +108,30 @@ export function registerContextMenus(
     contexts: ['link'],
     targetUrlPatterns: [...GITHUB_URL_PATTERNS],
   })
+}
 
-  contextMenus.onClicked.addListener((info, tab) => {
-    handleContextMenuClick(info, tab, download)
+export function registerContextMenus(
+  deps: RegisterContextMenusDeps = {},
+): void {
+  const contextMenus = deps.contextMenus ?? browser.contextMenus
+  const download = deps.startDownload ?? startDownload
+  const isInjected = Boolean(deps.contextMenus)
+
+  if (isInjected || !productionClickListenerBound) {
+    contextMenus.onClicked.addListener((info, tab) => {
+      handleContextMenuClick(info, tab, download)
+    })
+    if (!isInjected) {
+      productionClickListenerBound = true
+    }
+  }
+
+  void installContextMenuItems(contextMenus).catch(() => {
+    // contextMenus failures surface via runtime.lastError in Chrome DevTools
   })
+}
+
+/** Test seam: reset production listener guard between Vitest cases. */
+export function resetContextMenusForTests(): void {
+  productionClickListenerBound = false
 }

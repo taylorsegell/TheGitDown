@@ -13,7 +13,9 @@
     "lint": "eslint .",
     "ext:dev": "npm run dev -w gitdown",
     "ext:build": "npm run build -w gitdown",
-    "ext:build:firefox": "npm run build:firefox -w gitdown"
+    "ext:build:firefox": "npm run build:firefox -w gitdown",
+    "ext:zip": "npm run zip -w gitdown",
+    "ext:zip:firefox": "npm run zip:firefox -w gitdown"
   },
   "dependencies": {
     "@gitdown/core": "*",
